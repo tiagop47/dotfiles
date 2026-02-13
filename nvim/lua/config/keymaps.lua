@@ -7,15 +7,15 @@ keymap({'n', 'v', 'i'}, '<C-s>', '<Esc>:w<CR>')
 keymap({'n', 'v', 'i'}, '<C-z>', '<Esc>u')
 
 -- Multi-Cursor (Estilo VS Code)
-keymap("n", "<C-d>", "<Plug>(VM-Find-Under)")
-keymap("v", "<C-d>", "<Plug>(VM-Find-Under)")
-keymap("n", "<C-S-L>", "<Plug>(VM-Select-All)")
+keymap("n", "<C-d>", "<Plug>(VM-Find-Under)", { noremap = true })
+keymap("v", "<C-d>", "<Plug>(VM-Find-Under)", { noremap = true })
+keymap("n", "<C-S-L>", "<Plug>(VM-Select-All)", { noremap = true })
 
--- Clipboard (Geral)
-keymap("v", "<C-c>", '"+y')
-keymap("i", "<C-v>", '<C-r>+')
-keymap("c", "<C-v>", '<C-r>+')
-keymap("n", "<C-v>", '"+p')
+-- Clipboard (Geral - Teclado e Rato)
+keymap({'n', 'v'}, '<C-c>', '"+y', { noremap = true, silent = true })
+keymap({'n', 'v'}, '<C-v>', '"+p', { noremap = true, silent = true })
+keymap('i', '<C-v>', '<C-r>+', { noremap = true, silent = true })
+keymap('c', '<C-v>', '<C-r>+', { noremap = true, silent = true })
 
 -- Clipboard no TERMINAL
 keymap('t', '<C-v>', [[<C-\><C-n>"+pi]], { noremap = true })

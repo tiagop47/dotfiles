@@ -121,7 +121,18 @@ require("lazy").setup({
 
   -- UTILS
   { 'akinsho/toggleterm.nvim', opts = { open_mapping = [[<C-ç>]], direction = 'float' } },
-  { 'Exafunction/codeium.vim' },
+  { 
+    'mg979/vim-visual-multi', 
+    init = function() 
+      vim.g.VM_default_mappings = 0 
+      vim.g.VM_maps = {
+        ['Find Under'] = '<C-d>',
+        ['Find Next'] = '<C-d>',
+        ['Select All'] = '<C-S-L>',
+      }
+    end 
+  },
+  { "karb94/neoscroll.nvim", config = true },
 })
 
 -- CONFIGURAÇÃO LSP PROFISSIONAL
