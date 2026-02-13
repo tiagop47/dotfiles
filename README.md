@@ -15,6 +15,27 @@ Este repositório contém a minha configuração pessoal para um ambiente de des
 
 ## Instalação Passo a Passo
 
+### Migração imediata para outro WSL (inclui instalação)
+Se estás a começar um WSL do zero e já clonaste este repositório, podes preparar tudo de uma vez com:
+
+```bash
+cd ~/dotfiles
+./migrate-wsl.sh
+```
+
+Por omissão, o script:
+- instala dependências base (zsh, git, node/npm, java, neovim, etc.);
+- instala `live-server`, Oh My Zsh e Starship (quando não existirem);
+- cria symlinks para todas as configs deste repo;
+- faz backup automático de ficheiros/configs existentes em `~/dotfiles-backup-<timestamp>`.
+
+Opções úteis:
+
+```bash
+./migrate-wsl.sh --dry-run
+./migrate-wsl.sh --skip-install
+```
+
 ### 1. Pré-requisitos (WSL/Ubuntu)
 Primeiro, garante que o teu sistema está atualizado e com as ferramentas base:
 ```bash
