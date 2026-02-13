@@ -107,6 +107,7 @@ require('mason-lspconfig').setup({
 -- OPÇÕES & ATALHOS
 vim.opt.number = true
 vim.opt.relativenumber = true
+vim.opt.cursorline = true -- Destaca a linha atual, útil com números relativos
 vim.opt.clipboard = "unnamedplus"
 vim.opt.termguicolors = true
 vim.opt.scrolloff = 8
