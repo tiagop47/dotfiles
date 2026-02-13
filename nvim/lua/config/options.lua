@@ -26,6 +26,7 @@ opt.list = true
 opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 opt.inccommand = "split"
 opt.cursorline = true
+opt.laststatus = 3
 
 -- Neovide
 if vim.g.neovide then
