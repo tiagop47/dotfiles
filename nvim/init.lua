@@ -134,7 +134,7 @@ end)
 
 require('mason').setup({})
 require('mason-lspconfig').setup({
-  ensure_installed = {'vtsls', 'jdtls', 'html', 'cssls', 'emmet_ls', 'eslint'}, -- Adicionado ESLint
+  ensure_installed = {'vtsls', 'jdtls', 'html', 'cssls', 'emmet_ls', 'eslint', 'sonarlint-language-server'},
   handlers = { lsp_zero.default_setup },
 })
 
