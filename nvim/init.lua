@@ -104,6 +104,7 @@ require("lazy").setup({
   },
 
   -- UTILS
+  { 'Exafunction/codeium.vim', config = function() end },
   { 'akinsho/toggleterm.nvim', config = function() require("toggleterm").setup({ open_mapping = [[<C-ç>]], direction = 'horizontal', size = 12, dir = "curr_dir" }) end },
   { 
     'mg979/vim-visual-multi', 
@@ -162,6 +163,7 @@ keymap("n", "<leader>gr", ":GradleRun<CR>")
 
 keymap("v", "<C-c>", '"+y')
 keymap("i", "<C-v>", '<C-r>+')
+keymap("c", "<C-v>", '<C-r>+') -- Adicionado para colar em prompts/comando
 keymap("n", "<C-v>", '"+p')
 keymap({'n', 'v', 'i'}, '<C-z>', '<Esc>u')
 
