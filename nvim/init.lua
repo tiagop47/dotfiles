@@ -90,6 +90,7 @@ require("lazy").setup({
       {'neovim/nvim-lspconfig'},
       {'williamboman/mason.nvim'},
       {'williamboman/mason-lspconfig.nvim'},
+      {'WhoIsSethDaniel/mason-tool-installer.nvim'},
       {'hrsh7th/nvim-cmp'},
       {'hrsh7th/cmp-nvim-lsp'},
       {'L3MON4D3/LuaSnip'},
@@ -98,13 +99,25 @@ require("lazy").setup({
   { 'mfussenegger/nvim-jdtls' },
   {
     'stevearc/conform.nvim',
-    opts = {
-      formatters_by_ft = {
-        javascript = { "prettier" },
-        html = { "prettier" },
-        java = { "google-java-format" },
-      },
-    },
+    dependencies = { "williamboman/mason.nvim" },
+    config = function()
+      require("conform").setup({
+        formatters_by_ft = {
+          javascript = { "prettierd", "prettier", stop_after_first = true },
+          typescript = { "prettierd", "prettier", stop_after_first = true },
+          javascriptreact = { "prettierd", "prettier", stop_after_first = true },
+          typescriptreact = { "prettierd", "prettier", stop_after_first = true },
+          html = { "prettier" },
+          css = { "prettier" },
+          json = { "prettier" },
+          java = { "google-java-format" },
+        },
+        format_on_save = {
+          lsp_fallback = true,
+          timeout_ms = 500,
+        },
+      })
+    end
   },
 
   -- DIAGNÓSTICOS (ERRORLENS & TROUBLE)
@@ -222,6 +235,15 @@ require('mason-lspconfig').setup({
       -- O jdtls costuma ser gerido pelo nvim-jdtls, mas garantimos que o mason o tem
     end,
   },
+})
+
+require('mason-tool-installer').setup({
+  ensure_installed = {
+    'prettier',
+    'prettierd',
+    'google-java-format',
+    'eslint_d',
+  }
 })
 
 -- Mason-DAP para instalar adaptadores de debug automaticamente
