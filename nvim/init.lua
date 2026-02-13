@@ -126,7 +126,7 @@ require("lazy").setup({
       }
     end 
   },
-  { "karb94/neoscroll.nvim", config = function() require('neoscroll').setup() end },
+  { "karb94/neoscroll.nvim", config = function() require('neoscroll').setup({ mappings = {'<C-u>', '<C-b>', '<C-f>', '<C-y>', '<C-e>', 'zt', 'zz', 'zb'} }) end },
 })
 
 -- CONFIGURAÇÃO LSP
@@ -186,13 +186,22 @@ vim.api.nvim_set_hl(0, 'CursorLineNr', { fg = '#00ff00', bold = true })
 vim.api.nvim_set_hl(0, 'Cursor', { bg = '#ffff00', fg = '#000000' })
 vim.opt.guicursor = "n-v-c-sm:block-Cursor,i-ci-ve:ver25-Cursor,r-cr-o:hor20-Cursor"
 
+-- Auto-save (Estilo VS Code)
+vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged", "FocusLost" }, {
+  callback = function()
+    if vim.bo.modified and vim.bo.buftype == "" and vim.fn.expand("%") ~= "" then
+      vim.cmd("silent! wall")
+    end
+  end,
+})
+
 local keymap = vim.keymap.set
 keymap('n', '<C-p>', ':Telescope find_files<CR>')
 keymap('n', '<C-S-F>', ':Telescope live_grep<CR>')
 keymap('n', '<C-S-E>', ':NvimTreeToggle<CR>')
 keymap({'n', 'i', 'v'}, '<C-s>', '<Esc>:w<CR>')
-keymap("n", "<C-k>", "<C-u>zz")
-keymap("n", "<C-j>", "<C-d>zz")
+keymap("n", "<C-k>", "15kzz")
+keymap("n", "<C-j>", "15jzz")
 keymap("n", "<M-S-F>", function() require("conform").format({ lsp_fallback = true }) end)
 
 -- Toggle Codeium Auto-complete
