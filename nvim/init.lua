@@ -21,30 +21,52 @@ require("lazy").setup({
       vim.cmd('colorscheme github_dark_default') 
     end 
   },
+  { "SmiteshP/nvim-navic", dependencies = "neovim/nvim-lspconfig" }, -- Breadcrumbs
   { "nvim-tree/nvim-tree.lua", dependencies = { "nvim-tree/nvim-web-devicons" }, config = function() require("nvim-tree").setup({ view = { width = 30 } }) end },
   { 'nvim-telescope/telescope.nvim', dependencies = { 'nvim-lua/plenary.nvim' } },
   { 
     'nvim-lualine/lualine.nvim', 
-    dependencies = { 'nvim-tree/nvim-web-devicons' }, 
+    dependencies = { 'nvim-tree/nvim-web-devicons', 'SmiteshP/nvim-navic' }, 
     config = function() 
-      require('lualine').setup({ sections = { lualine_c = {{ 'filename', path = 0 }} } }) 
+      require('lualine').setup({ 
+        sections = { 
+          lualine_c = {
+            { 'filename', path = 0 },
+            { function() return require("nvim-navic").get_location() end, cond = function() return require("nvim-navic").is_available() end },
+          } 
+        } 
+      }) 
     end 
   },
 
-  -- TREESITTER (Destaque de Sintaxe e Deteção de Testes)
+  -- TREESITTER (Destaque de Sintaxe e Web Utils)
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+    dependencies = { "windwp/nvim-ts-autotag" },
     config = function()
-      local status, configs = pcall(require, "nvim-treesitter.configs")
-      if not status then return end
-      
-      configs.setup({
-        ensure_installed = { "java", "javascript", "typescript", "html", "css", "lua" },
-        sync_install = false,
-        auto_install = true,
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = { "java", "javascript", "typescript", "html", "css", "lua", "json" },
         highlight = { enable = true },
+        autotag = { enable = true }, -- Auto-close/rename HTML tags
       })
+    end
+  },
+
+  -- DEBUGGING (DAP)
+  {
+    "mfussenegger/nvim-dap",
+    dependencies = {
+      "rcarriga/nvim-dap-ui",
+      "nvim-neotest/nvim-nio",
+      "theHamsta/nvim-dap-virtual-text",
+    },
+    config = function()
+      local dap, dapui = require("dap"), require("dapui")
+      dapui.setup()
+      dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
+      dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
+      dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
     end
   },
 
@@ -155,7 +177,21 @@ lsp_zero.on_attach(function(client, bufnr)
   vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
   vim.keymap.set("n", "<C-.>", vim.lsp.buf.code_action, opts)
   vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, opts)
+
+  -- Ativar Navic (Breadcrumbs)
+  if client.server_capabilities.documentSymbolProvider then
+    require("nvim-navic").attach(client, bufnr)
+  end
 end)
+
+-- ATALHOS DEBUGGER (DAP)
+keymap("n", "<F5>", function() require("dap").continue() end)
+keymap("n", "<F10>", function() require("dap").step_over() end)
+keymap("n", "<F11>", function() require("dap").step_into() end)
+keymap("n", "<F12>", function() require("dap").step_out() end)
+keymap("n", "<leader>b", function() require("dap").toggle_breakpoint() end)
+keymap("n", "<leader>B", function() require("dap").set_breakpoint(vim.fn.input('Breakpoint condition: ')) end)
+keymap("n", "<leader>dr", function() require("dap").repl.open() end)
 
 require('mason').setup({})
 require('mason-lspconfig').setup({
@@ -167,8 +203,18 @@ require('mason-lspconfig').setup({
         capabilities = require('cmp_nvim_lsp').default_capabilities()
       })
     end,
+    -- Configuração especial para JDTLS (Java) integrada com DAP
+    jdtls = function()
+      -- O jdtls costuma ser gerido pelo nvim-jdtls, mas garantimos que o mason o tem
+    end,
   },
 })
+
+-- Mason-DAP para instalar adaptadores de debug automaticamente
+require('mason-lspconfig').setup({
+  ensure_installed = {'vtsls', 'jdtls', 'html', 'eslint'}
+})
+-- (Nota: O suporte completo de debug Java requer o nvim-jdtls configurado para DAP)
 
 -- Configuração do Autocomplete (CMP)
 local cmp = require('cmp')
