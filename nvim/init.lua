@@ -182,15 +182,20 @@ vim.api.nvim_set_hl(0, 'LineNrAbove', { fg = '#008800' })
 vim.api.nvim_set_hl(0, 'LineNrBelow', { fg = '#008800' })
 vim.api.nvim_set_hl(0, 'CursorLineNr', { fg = '#00ff00', bold = true })
 
--- Cores de Diagnósticos (Tons mais vivos para melhor visibilidade)
-vim.api.nvim_set_hl(0, "DiagnosticError", { fg = "#FF5555", bold = true })
-vim.api.nvim_set_hl(0, "DiagnosticWarn",  { fg = "#FFB86C", bold = true })
-vim.api.nvim_set_hl(0, "DiagnosticInfo",  { fg = "#8BE9FD", bold = true })
-vim.api.nvim_set_hl(0, "DiagnosticHint",  { fg = "#50FA7B", bold = true })
+-- Forçar Cores de Diagnósticos (Evita sobreposição pelo tema)
+vim.api.nvim_create_autocmd("ColorScheme", {
+  callback = function()
+    vim.api.nvim_set_hl(0, "DiagnosticError", { fg = "#FF5555", bold = true })
+    vim.api.nvim_set_hl(0, "DiagnosticWarn",  { fg = "#FFB86C", bold = true })
+    vim.api.nvim_set_hl(0, "DiagnosticInfo",  { fg = "#8BE9FD", bold = true })
+    vim.api.nvim_set_hl(0, "DiagnosticHint",  { fg = "#50FA7B", bold = true })
+    vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "#FF5555" })
+    vim.api.nvim_set_hl(0, "DiagnosticVirtualTextError", { fg = "#FF5555", bg = "#331111" })
+  end,
+})
 
--- Forçar cores para o ErrorLens/lsp_lines (Underline e Virtual Text)
-vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "#FF5555" })
-vim.api.nvim_set_hl(0, "DiagnosticVirtualTextError", { fg = "#FF5555", bg = "#331111" })
+-- Aplicar imediatamente para a sessão atual
+vim.cmd("doautocmd ColorScheme")
 
 -- Cor do Cursor (Amarelo)
 vim.api.nvim_set_hl(0, 'Cursor', { bg = '#ffff00', fg = '#000000' })
@@ -266,6 +271,34 @@ keymap({'n', 'v', 'i'}, '<C-z>', '<Esc>u')
 keymap('n', '<C-LeftMouse>', 'gx')
 keymap('t', '<C-LeftMouse>', [[<C-\><C-n><LeftMouse>gx]])
 keymap('i', '<C-LeftMouse>', '<Esc><LeftMouse>gx')
+
+-- CONFIGURAÇÃO DE CORES DO TERMINAL (ToggleTerm / Neovide)
+local function set_terminal_colors()
+    -- Fundo e Texto Padrão para o Terminal
+    vim.api.nvim_set_hl(0, "Terminal", { bg = "#1e1e2e", fg = "#cdd6f4" })
+    
+    -- Cores ANSI (Afetam a saída de comandos como ESLint)
+    vim.g.terminal_color_0  = "#1e1e2e" -- Black
+    vim.g.terminal_color_1  = "#ff6b6b" -- Red (Erros)
+    vim.g.terminal_color_2  = "#94d82d" -- Green
+    vim.g.terminal_color_3  = "#f9c74f" -- Yellow (Warnings)
+    vim.g.terminal_color_4  = "#4dabf7" -- Blue
+    vim.g.terminal_color_5  = "#b197fc" -- Magenta
+    vim.g.terminal_color_6  = "#3bc9db" -- Cyan
+    vim.g.terminal_color_7  = "#cdd6f4" -- White
+    vim.g.terminal_color_8  = "#45475a" -- Bright Black
+    vim.g.terminal_color_9  = "#ff8787" -- Bright Red
+    vim.g.terminal_color_10 = "#aff152" -- Bright Green
+    vim.g.terminal_color_11 = "#fadb7d" -- Bright Yellow
+    vim.g.terminal_color_12 = "#74c0fc" -- Bright Blue
+    vim.g.terminal_color_13 = "#d0bfff" -- Bright Magenta
+    vim.g.terminal_color_14 = "#66d9e8" -- Bright Cyan
+    vim.g.terminal_color_15 = "#f8f9fa" -- Bright White
+end
+
+-- Aplicar ao carregar e sempre que o tema mudar
+vim.api.nvim_create_autocmd("ColorScheme", { callback = set_terminal_colors })
+set_terminal_colors()
 
 -- NEOVIDE
 if vim.g.neovide then
