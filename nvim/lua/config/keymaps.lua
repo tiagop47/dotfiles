@@ -19,7 +19,6 @@ keymap('c', '<C-v>', '<C-r>+', { noremap = true, silent = true })
 
 -- Clipboard no TERMINAL
 keymap('t', '<C-v>', [[<C-\><C-n>"+pi]], { noremap = true })
-keymap('t', '<C-c>', [[<C-\><C-n>"+y]], { noremap = true })
 
 -- Clipboard no TELESCOPE (Ctrl+P e Ctrl+Shift+F)
 vim.api.nvim_create_autocmd("FileType", {
@@ -78,6 +77,32 @@ end)
 -- Terminal
 keymap('n', '<C-ç>', '<cmd>ToggleTerm<CR>')
 keymap('t', '<C-ç>', [[<C-\><C-n><cmd>ToggleTerm<CR>]])
+
+-- Facilitar a vida no Terminal (Fazer com que pareça um terminal normal)
+function _G.set_terminal_keymaps()
+  local opts = {buffer = 0}
+  keymap('t', '<esc>', [[<C-\><C-n>]], opts)
+  keymap('t', 'jk', [[<C-\><C-n>]], opts)
+  keymap('t', '<C-h>', [[<C-\><C-n><C-W>h]], opts)
+  keymap('t', '<C-j>', [[<C-\><C-n><C-W>j]], opts)
+  keymap('t', '<C-k>', [[<C-\><C-n><C-W>k]], opts)
+  keymap('t', '<C-l>', [[<C-\><C-n><C-W>l]], opts)
+end
+
+-- Aplicar mapeamentos apenas quando o terminal abrir
+vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
+
+-- Auto-insert ao entrar no terminal
+vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
+  pattern = "term://*",
+  callback = function()
+    vim.cmd("startinsert")
+    -- Esconder UI que não faz sentido no terminal
+    vim.opt_local.number = false
+    vim.opt_local.relativenumber = false
+    vim.opt_local.signcolumn = "no"
+  end,
+})
 
 -- Abrir Report de Testes Gradle instantaneamente (Ctrl + Shift + B)
 keymap({'n', 'i', 'v'}, '<C-S-B>', function()

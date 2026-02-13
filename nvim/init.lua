@@ -120,7 +120,18 @@ require("lazy").setup({
   },
 
   -- UTILS
-  { 'akinsho/toggleterm.nvim', opts = { open_mapping = [[<C-ç>]], direction = 'float' } },
+  { 
+    'akinsho/toggleterm.nvim', 
+    opts = { 
+      open_mapping = [[<C-ç>]], 
+      direction = 'float',
+      start_in_insert = true,
+      persist_mode = true,
+      float_opts = {
+        border = 'rounded',
+      },
+    } 
+  },
   { 
     'mg979/vim-visual-multi', 
     init = function() 
