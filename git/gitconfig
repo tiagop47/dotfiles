@@ -1,0 +1,47 @@
+[user]
+	email = 8240128@estg.ipp.pt
+	name = Jose Tiago
+[http]
+	sslVerify = false
+[credential]
+	helper = 
+[url "https://8240128:Mx4MyJPJufKjuHMXJzS7@gitlab.estg.ipp.pt/"]
+	insteadOf = http://gitlab.estg.ipp.pt/
+
+# --- FAANG Senior Defaults ---
+[core]
+    pager = delta
+    editor = nvim
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true    # use n and N to move between diff sections
+    light = false      # set to true if you're in a terminal w/ a light background color (e.g. the default macOS terminal)
+    line-numbers = true
+    side-by-side = true
+
+[merge]
+    conflictstyle = diff3
+
+[diff]
+    colorMoved = default
+
+[pull]
+    rebase = true # Evita merge commits desnecessários ("Merge branch 'master' of...")
+
+[init]
+    defaultBranch = main
+
+[alias]
+    st = status
+    co = checkout
+    br = branch
+    ci = commit
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
