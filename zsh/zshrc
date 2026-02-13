@@ -72,6 +72,10 @@ if [[ ! -f ~/.starship_init.zsh ]]; then
 fi
 source ~/.starship_init.zsh
 
+# Node.js Errors & Development
+export NODE_OPTIONS="--enable-source-maps" # Melhora stack traces com TypeScript/Builds
+alias node='node --enable-source-maps'
+
 # JavaScript / NPM
 alias ni='npm install'
 alias nr='npm run'
