@@ -1,0 +1,124 @@
+# Path to Oh My Zsh
+export ZSH="$HOME/.oh-my-zsh"
+
+# Performance: Skip verification of completions permissions (slow in WSL)
+ZSH_DISABLE_COMPFIX="true"
+
+# Performance: Auto-update OMZ less frequently (every 13 days)
+export UPDATE_ZSH_DAYS=13
+
+# Plugins
+plugins=(
+  git
+  zsh-completions
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+)
+
+source $ZSH/oh-my-zsh.sh
+
+# ---------- Qualidade de Vida ----------
+setopt correct
+autoload -U colors && colors
+setopt prompt_subst
+
+# ---------- Vim Mode (Primeagen Style) ----------
+bindkey -v
+export KEYTIMEOUT=1
+# Atalho para editar comandos no editor com 'v' no modo normal
+autoload -U edit-command-line
+zle -N edit-command-line
+bindkey -M vicmd 'v' edit-command-line
+
+# ---------- Navegação e Busca ----------
+# Auto-ls ao mudar de diretório
+function chpwd() {
+    eza --icons --group-directories-first
+}
+
+# FZF Integration
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# TAB completo sempre
+bindkey '^I' complete-word
+zstyle ':completion:*' menu select
+
+# Setas: histórico por prefixo
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
+
+# ---------- Paths / Envs ----------
+export PATH="$HOME/.local/bin:$PATH"
+
+# NVM
+
+# ---------- Aliases & Tools ----------
+alias c='clear'
+alias vi='nvim'
+alias v='nvim'
+alias ls='eza --icons --group-directories-first'
+alias ll='eza -l --icons --group-directories-first'
+alias la='eza -la --icons --group-directories-first'
+alias lt='eza --tree --level=2 --icons'
+alias cat='batcat --style=plain' # No Ubuntu o comando é batcat
+alias transf="cd /mnt/c/Users/tiago/Downloads"
+
+# WSL Specifics
+
+# ---------- Inits ----------
+# Cache starship init for faster startup
+if [[ ! -f ~/.starship_init.zsh ]]; then
+  starship init zsh > ~/.starship_init.zsh
+fi
+source ~/.starship_init.zsh
+
+# JavaScript / NPM
+alias ni='npm install'
+alias nr='npm run'
+alias nd='npm run dev'
+
+# Fastfetch ao iniciar (comentado por performance, use 'ff' para ver)
+alias ff='fastfetch --config ~/.config/fastfetch/config.jsonc'
+fastfetch --config ~/.config/fastfetch/config.jsonc
+
+
+
+# Yazi - Navegador de Arquivos (wrapper para mudar diretorio)
+function fo() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+	fi
+	rm -f -- "$tmp"
+}
+
+# Autosuggestions Config
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#585b70,bold,underline"
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+# Clipboard Integration
+# alias clip="clip.exe"
+# alias pbcopy="clip.exe"
+
+# Alias para LazyGit
+alias lg="lazygit"
+export PATH="$HOME/go/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+alias chat='echo "--- Tiago GPT CLI ---" && tgpt'
+
+# Zoxide (Better cd)
+eval "$(zoxide init zsh)"
+alias cd="z"
+
+export PATH="$PATH:/opt/nvim-linux-arm64/bin"
+
+# Node Version Manager (fnm)
+eval "$(fnm env --use-on-cd)"
+export PATH=$PATH:/opt/gradle/gradle-9.3.1/bin
+# Neovide WSL Function
+nvid() {
+  "/mnt/c/Program Files/Neovide/neovide.exe" --wsl --neovim-bin "/usr/bin/nvim" "$@" &!
+}
+alias nv='neovide.exe --wsl'
+alias neovide='neovide.exe --wsl'
+alias neovide='neovide.exe --wsl'
