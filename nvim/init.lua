@@ -182,6 +182,12 @@ vim.api.nvim_set_hl(0, 'LineNrAbove', { fg = '#008800' })
 vim.api.nvim_set_hl(0, 'LineNrBelow', { fg = '#008800' })
 vim.api.nvim_set_hl(0, 'CursorLineNr', { fg = '#00ff00', bold = true })
 
+-- Cores de Diagnósticos
+vim.api.nvim_set_hl(0, "DiagnosticError", { fg = "#ff6b6b" })
+vim.api.nvim_set_hl(0, "DiagnosticWarn",  { fg = "#f9c74f" })
+vim.api.nvim_set_hl(0, "DiagnosticInfo",  { fg = "#4dabf7" })
+vim.api.nvim_set_hl(0, "DiagnosticHint",  { fg = "#94d82d" })
+
 -- Cor do Cursor (Amarelo)
 vim.api.nvim_set_hl(0, 'Cursor', { bg = '#ffff00', fg = '#000000' })
 vim.opt.guicursor = "n-v-c-sm:block-Cursor,i-ci-ve:ver25-Cursor,r-cr-o:hor20-Cursor"
