@@ -121,4 +121,4 @@ nvid() {
 }
 alias nv='neovide.exe --wsl'
 alias neovide='neovide.exe --wsl'
-alias neovide='neovide.exe --wsl'
+
