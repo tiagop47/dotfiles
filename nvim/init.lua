@@ -11,6 +11,15 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- OPÇÕES BÁSICAS
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.signcolumn = "yes"
+vim.opt.cursorline = true
+vim.opt.clipboard = "unnamedplus"
+vim.opt.termguicolors = true
+vim.opt.scrolloff = 8
+
 local keymap = vim.keymap.set -- DEFINIR KEYMAP GLOBALMENTE
 
 require("lazy").setup({
@@ -237,15 +246,6 @@ cmp.setup({
     {name = 'luasnip'},
   }
 })
-
--- OPÇÕES & ATALHOS
-vim.opt.number = true
-vim.opt.relativenumber = true
-vim.opt.signcolumn = "yes"
-vim.opt.cursorline = true
-vim.opt.clipboard = "unnamedplus"
-vim.opt.termguicolors = true
-vim.opt.scrolloff = 8
 
 -- Cores dos Números (Verde)
 vim.api.nvim_set_hl(0, 'LineNr', { fg = '#00ff00' })
