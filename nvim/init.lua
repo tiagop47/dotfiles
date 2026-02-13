@@ -182,11 +182,15 @@ vim.api.nvim_set_hl(0, 'LineNrAbove', { fg = '#008800' })
 vim.api.nvim_set_hl(0, 'LineNrBelow', { fg = '#008800' })
 vim.api.nvim_set_hl(0, 'CursorLineNr', { fg = '#00ff00', bold = true })
 
--- Cores de Diagnósticos
-vim.api.nvim_set_hl(0, "DiagnosticError", { fg = "#ff6b6b" })
-vim.api.nvim_set_hl(0, "DiagnosticWarn",  { fg = "#f9c74f" })
-vim.api.nvim_set_hl(0, "DiagnosticInfo",  { fg = "#4dabf7" })
-vim.api.nvim_set_hl(0, "DiagnosticHint",  { fg = "#94d82d" })
+-- Cores de Diagnósticos (Tons mais vivos para melhor visibilidade)
+vim.api.nvim_set_hl(0, "DiagnosticError", { fg = "#FF5555", bold = true })
+vim.api.nvim_set_hl(0, "DiagnosticWarn",  { fg = "#FFB86C", bold = true })
+vim.api.nvim_set_hl(0, "DiagnosticInfo",  { fg = "#8BE9FD", bold = true })
+vim.api.nvim_set_hl(0, "DiagnosticHint",  { fg = "#50FA7B", bold = true })
+
+-- Forçar cores para o ErrorLens/lsp_lines (Underline e Virtual Text)
+vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "#FF5555" })
+vim.api.nvim_set_hl(0, "DiagnosticVirtualTextError", { fg = "#FF5555", bg = "#331111" })
 
 -- Cor do Cursor (Amarelo)
 vim.api.nvim_set_hl(0, 'Cursor', { bg = '#ffff00', fg = '#000000' })
