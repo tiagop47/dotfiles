@@ -306,6 +306,8 @@ vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged", "FocusLost" }, {
 keymap('n', '<C-p>', ':Telescope find_files<CR>')
 keymap('n', '<C-S-F>', ':Telescope live_grep<CR>')
 keymap('n', '<C-S-E>', ':NvimTreeToggle<CR>')
+keymap('n', '<C-q>', function() vim.lsp.buf.hover() end) -- Ctrl + Q para documentação
+keymap('i', '<C-q>', function() vim.lsp.buf.hover() end) -- Ctrl + Q em modo de inserção
 keymap('n', '<M-m>', '<cmd>Trouble diagnostics toggle<CR>') -- Alt + M para ver todos os erros (ESLint, etc)
 keymap('n', '<leader>xx', '<cmd>Trouble diagnostics toggle filter.buf=0<CR>') -- Erros apenas do ficheiro atual
 keymap({'n', 'i', 'v'}, '<C-s>', '<Esc>:w<CR>')
