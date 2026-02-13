@@ -46,12 +46,15 @@ require("lazy").setup({
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     dependencies = { "windwp/nvim-ts-autotag" },
-    main = "nvim-treesitter.configs",
-    opts = {
-      ensure_installed = { "java", "javascript", "typescript", "html", "css", "lua", "json" },
-      highlight = { enable = true },
-      autotag = { enable = true },
-    },
+    config = function()
+      local status, configs = pcall(require, "nvim-treesitter.configs")
+      if not status then return end
+      configs.setup({
+        ensure_installed = { "java", "javascript", "typescript", "html", "css", "lua", "json" },
+        highlight = { enable = true },
+        autotag = { enable = true },
+      })
+    end
   },
 
   -- DEBUGGING (DAP)
