@@ -1,11 +1,51 @@
+-- Configurações Globais
 vim.g.mapleader = " "
-vim.opt.number = true
-vim.opt.relativenumber = true
-vim.opt.shiftwidth = 4
-vim.opt.tabstop = 4
-vim.opt.expandtab = true
+vim.g.maplocalleader = " "
 
+local opt = vim.opt
+
+opt.number = true
+opt.relativenumber = true
+opt.signcolumn = "yes"
+opt.cursorline = true
+opt.clipboard = "unnamedplus"
+opt.termguicolors = true
+opt.scrolloff = 8
+opt.tabstop = 2
+opt.shiftwidth = 2
+opt.expandtab = true
+opt.softtabstop = 2
+opt.mouse = "a"
+opt.ignorecase = true
+opt.smartcase = true
+opt.updatetime = 250
+opt.timeoutlen = 300
+opt.splitright = true
+opt.splitbelow = true
+opt.list = true
+opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+opt.inccommand = "split"
+opt.cursorline = true
+
+-- Neovide
 if vim.g.neovide then
-    vim.g.neovide_opacity = 0.9
-    vim.opt.guifont = "FiraCode NF:h12"
+    vim.g.neovide_fullscreen = true
+    vim.o.guifont = "Consolas:h12" -- Aumentado para h12
+    vim.g.neovide_scale_factor = 1.0
+    vim.g.neovide_opacity = 0.97
 end
+
+-- Função para forçar cores personalizadas (Verde Neon e Amarelo Torrado)
+local function apply_custom_colors()
+    vim.api.nvim_set_hl(0, 'LineNr', { fg = '#39FF14' }) -- Verde Neon
+    vim.api.nvim_set_hl(0, 'LineNrAbove', { fg = '#228B22' }) -- Verde Floresta
+    vim.api.nvim_set_hl(0, 'LineNrBelow', { fg = '#228B22' })
+    vim.api.nvim_set_hl(0, 'CursorLineNr', { fg = '#39FF14', bold = true })
+    vim.api.nvim_set_hl(0, 'Cursor', { bg = '#DAA520', fg = '#000000' }) -- Amarelo Torrado
+end
+
+-- Aplicar ao carregar e sempre que o tema mudar
+vim.api.nvim_create_autocmd("ColorScheme", { callback = apply_custom_colors })
+apply_custom_colors()
+
+vim.opt.guicursor = "n-v-c-sm:block-Cursor,i-ci-ve:ver25-Cursor,r-cr-o:hor20-Cursor"

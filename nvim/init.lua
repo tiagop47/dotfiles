@@ -1,94 +1,76 @@
 -- =============================================================================
--- NEOVIM CONFIGURATION (VSCODE STYLE - STABLE)
+-- PROFESSIONAL NEOVIM CONFIGURATION (JS & ANGULAR OPTIMIZED)
 -- =============================================================================
 
--- 1. BOOTSTRAP LAZY.NVIM
-vim.g.mapleader = " " -- DEFINIR ESPAÇO COMO LEADER
+require("config.options")
 
+-- 1. BOOTSTRAP LAZY.NVIM
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({ "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath })
 end
 vim.opt.rtp:prepend(lazypath)
 
--- OPÇÕES BÁSICAS
-vim.opt.number = true
-vim.opt.relativenumber = true
-vim.opt.signcolumn = "yes"
-vim.opt.cursorline = true
-vim.opt.clipboard = "unnamedplus"
-vim.opt.termguicolors = true
-vim.opt.scrolloff = 8
-vim.opt.tabstop = 2
-vim.opt.shiftwidth = 2
-vim.opt.expandtab = true
-vim.opt.softtabstop = 2
-
-local keymap = vim.keymap.set -- DEFINIR KEYMAP GLOBALMENTE
-
 require("lazy").setup({
   -- UI & THEME
-  { 
-    'projekt0n/github-nvim-theme', 
-    lazy = false, priority = 1000, 
-    config = function() 
-      require('github-theme').setup({ options = { transparent = false } })
-      vim.cmd('colorscheme github_dark_default') 
-    end 
+  {
+    'sainnhe/gruvbox-material',
+    lazy = false,
+    priority = 1000,
+    config = function()
+      vim.g.gruvbox_material_background = 'hard'
+      vim.g.gruvbox_material_better_performance = 1
+      vim.cmd('colorscheme gruvbox-material')
+    end
   },
-  { "SmiteshP/nvim-navic", dependencies = "neovim/nvim-lspconfig" }, -- Breadcrumbs
-  { "nvim-tree/nvim-tree.lua", dependencies = { "nvim-tree/nvim-web-devicons" }, config = function() require("nvim-tree").setup({ view = { width = 30 } }) end },
+  { "SmiteshP/nvim-navic", dependencies = "neovim/nvim-lspconfig" },
+  { 
+    "nvim-tree/nvim-tree.lua", 
+    dependencies = "nvim-tree/nvim-web-devicons", 
+    opts = { 
+      view = { width = 30 },
+      filters = {
+        git_ignored = false, -- Não esconder ficheiros do .gitignore
+        dotfiles = false,
+      },
+      git = {
+        enable = true,
+        ignore = false, -- Forçar a exibição mesmo que o git ignore
+      },
+    } 
+  },
   { 'nvim-telescope/telescope.nvim', dependencies = { 'nvim-lua/plenary.nvim' } },
   { 
     'nvim-lualine/lualine.nvim', 
     dependencies = { 'nvim-tree/nvim-web-devicons', 'SmiteshP/nvim-navic' }, 
     config = function() 
       require('lualine').setup({ 
-        sections = { 
-          lualine_c = {
-            { 'filename', path = 0 },
-            { function() return require("nvim-navic").get_location() end, cond = function() return require("nvim-navic").is_available() end },
-          } 
-        } 
+        sections = { lualine_c = { { 'filename', path = 1 }, { function() return require("nvim-navic").get_location() end, cond = function() return require("nvim-navic").is_available() end } } } 
       }) 
     end 
   },
 
-  -- TREESITTER (Destaque de Sintaxe e Web Utils)
+  -- PRODUTIVIDADE PROFISSIONAL (O que faltava)
+  { "lewis6991/gitsigns.nvim", opts = {} }, -- Indicadores de Git na margem
+  { "numToStr/Comment.nvim", opts = {} }, -- Comentários fáceis com `gcc` ou `gc`
+  { "echasnovski/mini.surround", opts = {} }, -- Manipular aspas, parênteses, etc.
+  { "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} }, -- Guias de indentação
+  { "windwp/nvim-autopairs", config = true },
+
+  -- TREESITTER (Syntax Highlighting)
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     dependencies = { "windwp/nvim-ts-autotag" },
     config = function()
       local status, configs = pcall(require, "nvim-treesitter.configs")
-      if not status then return end
-      configs.setup({
-        ensure_installed = { "java", "javascript", "typescript", "html", "css", "lua", "json", "markdown", "markdown_inline", "vim", "vimdoc", "query" },
-        sync_install = false,
-        auto_install = true,
-        highlight = { 
-          enable = true,
-          additional_vim_regex_highlighting = false,
-        },
-        autotag = { enable = true },
-      })
-    end
-  },
-
-  -- DEBUGGING (DAP)
-  {
-    "mfussenegger/nvim-dap",
-    dependencies = {
-      "rcarriga/nvim-dap-ui",
-      "nvim-neotest/nvim-nio",
-      "theHamsta/nvim-dap-virtual-text",
-    },
-    config = function()
-      local dap, dapui = require("dap"), require("dapui")
-      dapui.setup()
-      dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
-      dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
-      dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
+      if status then
+        configs.setup({
+          ensure_installed = { "javascript", "typescript", "html", "css", "lua", "json", "markdown", "java" },
+          highlight = { enable = true },
+          autotag = { enable = true },
+        })
+      end
     end
   },
 
@@ -105,212 +87,96 @@ require("lazy").setup({
       {'L3MON4D3/LuaSnip'},
     }
   },
-  { 'mfussenegger/nvim-jdtls' },
+
+  -- FERRAMENTAS ANGULAR & JS
   {
     'stevearc/conform.nvim',
-    dependencies = { "williamboman/mason.nvim" },
-    config = function()
-      require("conform").setup({
-        formatters_by_ft = {
-          javascript = { "prettierd", "prettier", stop_after_first = true },
-          typescript = { "prettierd", "prettier", stop_after_first = true },
-          javascriptreact = { "prettierd", "prettier", stop_after_first = true },
-          typescriptreact = { "prettierd", "prettier", stop_after_first = true },
-          html = { "prettier" },
-          css = { "prettier" },
-          json = { "prettier" },
-          java = { "google-java-format" },
-        },
-        format_on_save = {
-          lsp_fallback = true,
-          timeout_ms = 500,
-        },
-      })
-    end
+    opts = {
+      formatters_by_ft = {
+        javascript = { "prettierd", "prettier", stop_after_first = true },
+        typescript = { "prettierd", "prettier", stop_after_first = true },
+        html = { "prettier" },
+        css = { "prettier" },
+        json = { "prettier" },
+        angular = { "prettier" },
+      },
+      format_on_save = { lsp_fallback = true, timeout_ms = 500 },
+    }
   },
 
-  -- DIAGNÓSTICOS (ERRORLENS & TROUBLE)
-  {
-    "folke/trouble.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = {},
-  },
-  {
-    "Maan2003/lsp_lines.nvim",
-    config = function()
-      require("lsp_lines").setup()
-      vim.diagnostic.config({ virtual_text = false, virtual_lines = true })
-    end,
-  },
+  -- DIAGNÓSTICOS & UI
+  { "folke/trouble.nvim", opts = {} },
+  -- Removido lsp_lines devido a instabilidade com versões novas do Neovim
 
-  -- TESTES (JAVA & JEST)
+
+  -- DEBUGGING & TESTES
+  { "mfussenegger/nvim-dap", dependencies = { "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" } },
   {
     "nvim-neotest/neotest",
-    dependencies = {
-      "nvim-neotest/nvim-nio",
-      "nvim-lua/plenary.nvim",
-      "nvim-treesitter/nvim-treesitter",
-      "rcasia/neotest-java",
-      "haydenmeade/neotest-jest",
-    },
+    dependencies = { "nvim-neotest/nvim-nio", "rcasia/neotest-java", "haydenmeade/neotest-jest" },
     config = function()
-      require("neotest").setup({
-        adapters = {
-          require("neotest-java")({
-            ignore_wrapper = false,
-          }),
-          require("neotest-jest")({ jestCommand = "npm test --" }),
-        }
-      })
+      require("neotest").setup({ adapters = { require("neotest-java"), require("neotest-jest")({ jestCommand = "npm test --" }) } })
     end
   },
 
   -- UTILS
-  { 'windwp/nvim-autopairs', config = function() require("nvim-autopairs").setup {} end },
-  { 'Exafunction/codeium.vim', config = function() end },
-  {
-    'barrett-ruth/live-server.nvim',
-    config = function()
-      vim.g.live_server = {
-        args = { '--no-browser' }
-      }
-    end
-  },
-  { 'akinsho/toggleterm.nvim', config = function() 
-    require("toggleterm").setup({ 
-      open_mapping = [[<C-ç>]], 
-      direction = 'float', 
-      size = 12, 
-      dir = "curr_dir",
-      highlights = {
-        Normal = { guibg = "#0d0d14" },
-        NormalFloat = { guibg = "#0d0d14" },
-        FloatBorder = { guifg = "#33FF33", guibg = "#0d0d14" },
-      }
-    }) 
-  end },
-  { 
-    'mg979/vim-visual-multi', 
-    init = function() 
-      vim.g.VM_default_mappings = 0 -- Desativar padrões para não haver conflito
-      vim.g.VM_maps = {
-        ['Find Under'] = '<C-d>',
-        ['Find Next'] = '<C-d>',
-        ['Select All'] = '<C-S-L>',
-        ['Skip Region'] = '<C-x>',
-      }
-    end 
-  },
-  { "karb94/neoscroll.nvim", config = function() require('neoscroll').setup({ mappings = {'<C-u>', '<C-b>', '<C-f>', '<C-y>', '<C-e>', 'zt', 'zz', 'zb'} }) end },
+  { 'akinsho/toggleterm.nvim', opts = { open_mapping = [[<C-ç>]], direction = 'float' } },
+  { 'Exafunction/codeium.vim' },
 })
 
--- CONFIGURAÇÃO LSP
+-- CONFIGURAÇÃO LSP PROFISSIONAL
 local lsp_zero = require('lsp-zero')
 lsp_zero.on_attach(function(client, bufnr)
-  local opts = {buffer = bufnr}
-  vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-  vim.keymap.set("n", "<F12>", vim.lsp.buf.definition, opts)
-  vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-  vim.keymap.set("n", "<C-.>", vim.lsp.buf.code_action, opts)
-  vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, opts)
-
-  -- Ativar Navic (Breadcrumbs)
+  -- Breadcrumbs
   if client.server_capabilities.documentSymbolProvider then
     require("nvim-navic").attach(client, bufnr)
   end
 end)
 
--- ATALHOS DEBUGGER (DAP)
-keymap("n", "<F5>", function() require("dap").continue() end)
-keymap("n", "<F10>", function() require("dap").step_over() end)
-keymap("n", "<F11>", function() require("dap").step_into() end)
-keymap("n", "<F12>", function() require("dap").step_out() end)
-keymap("n", "<leader>b", function() require("dap").toggle_breakpoint() end)
-keymap("n", "<leader>B", function() require("dap").set_breakpoint(vim.fn.input('Breakpoint condition: ')) end)
-keymap("n", "<leader>dr", function() require("dap").repl.open() end)
-
 require('mason').setup({})
 require('mason-lspconfig').setup({
-  ensure_installed = {'vtsls', 'jdtls', 'html', 'eslint', 'emmet_ls'},
+  ensure_installed = {'vtsls', 'angularls', 'eslint', 'html', 'cssls', 'emmet_ls'},
   handlers = {
     lsp_zero.default_setup,
-    html = function()
-      require('lspconfig').html.setup({
-        capabilities = require('cmp_nvim_lsp').default_capabilities(),
-        filetypes = { "html", "javascript", "javascriptreact", "typescriptreact", "css" }
+    angularls = function()
+      require('lspconfig').angularls.setup({
+        -- Configuração para garantir que funciona em projetos Angular
+        root_dir = require('lspconfig.util').root_pattern("angular.json", "nx.json", "package.json"),
       })
-    end,
-    emmet_ls = function()
-      require('lspconfig').emmet_ls.setup({
-        capabilities = require('cmp_nvim_lsp').default_capabilities(),
-        filetypes = { "html", "javascript", "javascriptreact", "typescriptreact", "css", "sass", "scss", "less" },
-      })
-    end,
-    -- Configuração especial para JDTLS (Java) integrada com DAP
-    jdtls = function()
-      -- O jdtls costuma ser gerido pelo nvim-jdtls, mas garantimos que o mason o tem
     end,
   },
 })
 
 require('mason-tool-installer').setup({
-  ensure_installed = {
-    'prettier',
-    'prettierd',
-    'google-java-format',
-    'eslint_d',
-  }
+  ensure_installed = { 'prettier', 'prettierd', 'eslint_d' }
 })
 
--- Mason-DAP para instalar adaptadores de debug automaticamente
-require('mason-lspconfig').setup({
-  ensure_installed = {'vtsls', 'jdtls', 'html', 'eslint'}
-})
--- (Nota: O suporte completo de debug Java requer o nvim-jdtls configurado para DAP)
-
--- Configuração do Autocomplete (CMP)
+-- CMP (Autocomplete)
 local cmp = require('cmp')
-local cmp_autopairs = require('nvim-autopairs.completion.cmp')
-cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
-
 cmp.setup({
   mapping = cmp.mapping.preset.insert({
-    ['<CR>'] = cmp.mapping.confirm({select = true}), -- Enter para aceitar
-    ['<Tab>'] = cmp.mapping.select_next_item(),    -- Tab para o próximo
-    ['<S-Tab>'] = cmp.mapping.select_prev_item(), -- Shift+Tab para o anterior
+    ['<CR>'] = cmp.mapping.confirm({select = true}),
+    ['<Tab>'] = cmp.mapping.select_next_item(),
+    ['<S-Tab>'] = cmp.mapping.select_prev_item(),
   }),
-  sources = {
-    {name = 'nvim_lsp'},
-    {name = 'luasnip'},
-  }
+  sources = { {name = 'nvim_lsp'}, {name = 'luasnip'} }
 })
 
--- Cores dos Números (Verde)
-vim.api.nvim_set_hl(0, 'LineNr', { fg = '#00ff00' })
-vim.api.nvim_set_hl(0, 'LineNrAbove', { fg = '#008800' })
-vim.api.nvim_set_hl(0, 'LineNrBelow', { fg = '#008800' })
-vim.api.nvim_set_hl(0, 'CursorLineNr', { fg = '#00ff00', bold = true })
+require("config.keymaps")
 
--- Forçar Cores de Diagnósticos (Evita sobreposição pelo tema)
-vim.api.nvim_create_autocmd("ColorScheme", {
-  callback = function()
-    vim.api.nvim_set_hl(0, "DiagnosticError", { fg = "#FF5555", bold = true })
-    vim.api.nvim_set_hl(0, "DiagnosticWarn",  { fg = "#FFB86C", bold = true })
-    vim.api.nvim_set_hl(0, "DiagnosticInfo",  { fg = "#8BE9FD", bold = true })
-    vim.api.nvim_set_hl(0, "DiagnosticHint",  { fg = "#50FA7B", bold = true })
-    vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "#FF5555" })
-    vim.api.nvim_set_hl(0, "DiagnosticVirtualTextError", { fg = "#FF5555", bg = "#331111" })
-  end,
+-- Auto-save on focus lost / leave insert
+vim.diagnostic.config({
+  virtual_text = {
+    prefix = '●', -- Círculo elegante antes do erro
+    spacing = 4,
+  },
+  severity_sort = true,
+  float = {
+    border = 'rounded',
+    source = 'always',
+  },
 })
 
--- Aplicar imediatamente para a sessão atual
-vim.cmd("doautocmd ColorScheme")
-
--- Cor do Cursor (Amarelo)
-vim.api.nvim_set_hl(0, 'Cursor', { bg = '#ffff00', fg = '#000000' })
-vim.opt.guicursor = "n-v-c-sm:block-Cursor,i-ci-ve:ver25-Cursor,r-cr-o:hor20-Cursor"
-
--- Auto-save (Estilo VS Code)
 vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged", "FocusLost" }, {
   callback = function()
     if vim.bo.modified and vim.bo.buftype == "" and vim.fn.expand("%") ~= "" then
@@ -318,112 +184,3 @@ vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged", "FocusLost" }, {
     end
   end,
 })
-
-keymap('n', '<C-p>', ':Telescope find_files<CR>')
-keymap('n', '<C-S-F>', ':Telescope live_grep<CR>')
-keymap('n', '<C-S-E>', ':NvimTreeToggle<CR>')
-keymap('n', '<C-q>', function() vim.lsp.buf.hover() end) -- Ctrl + Q para documentação
-keymap('i', '<C-q>', function() vim.lsp.buf.hover() end) -- Ctrl + Q em modo de inserção
-keymap('n', '<M-m>', '<cmd>Trouble diagnostics toggle<CR>') -- Alt + M para ver todos os erros (ESLint, etc)
-keymap('n', '<leader>xx', '<cmd>Trouble diagnostics toggle filter.buf=0<CR>') -- Erros apenas do ficheiro atual
-keymap({'n', 'i', 'v'}, '<C-s>', '<Esc>:w<CR>')
-keymap("n", "<C-k>", "15kzz")
-keymap("n", "<C-j>", "15jzz")
-keymap("n", "<M-S-F>", function() 
-    require("conform").format({ lsp_fallback = true, async = true }) 
-end)
-
--- Toggle Codeium Auto-complete
-local codeium_active = true
-keymap({'n', 'i', 'v'}, '<C-S-C>', function()
-    if codeium_active then
-        vim.cmd('CodeiumDisable')
-        codeium_active = false
-        print("Codeium Desativado")
-    else
-        vim.cmd('CodeiumEnable')
-        codeium_active = true
-        print("Codeium Ativado")
-    end
-end)
-
--- Live Server Toggle (Alt + l + o)
-local live_server_running = false
-keymap('n', '<M-l>o', function()
-    if live_server_running then
-        vim.cmd('LiveServerStop')
-        live_server_running = false
-        print("Live Server Parado")
-    else
-        local current_file = vim.fn.expand('%')
-        if current_file == "" then current_file = "index.html" end
-        
-        -- Forçar porta 8080 e abrir o ficheiro atual
-        vim.g.live_server = {
-            args = { "--port=8080", "--open=" .. current_file }
-        }
-        
-        vim.cmd('LiveServerStart')
-        live_server_running = true
-        print("Live Server em http://127.0.0.1:8080/ a abrir " .. current_file)
-    end
-end)
-
--- TESTES (Agora com Espaço como Leader)
-keymap("n", "<leader>tr", function() require("neotest").run.run() end)
-keymap("n", "<leader>tl", "<cmd>Trouble qflist toggle<CR>") -- Ver lista de testes/erros no Trouble
-keymap("n", "<leader>ts", function() require("neotest").summary.toggle() end)
-keymap("n", "<leader>to", function() require("neotest").output.open({ enter = true }) end)
-keymap("n", "<leader>gr", ":GradleRun<CR>")
-
-keymap("v", "<C-c>", '"+y')
-keymap("i", "<C-v>", '<C-r>+')
-keymap("c", "<C-v>", '<C-r>+') -- Adicionado para colar em prompts/comando
-keymap("n", "<C-v>", '"+p')
-keymap({'n', 'v', 'i'}, '<C-z>', '<Esc>u')
-
--- Abrir links com Ctrl + Clique (Estilo VS Code)
-keymap('n', '<C-LeftMouse>', 'gx')
-keymap('t', '<C-LeftMouse>', [[<C-\><C-n><LeftMouse>gx]])
-keymap('i', '<C-LeftMouse>', '<Esc><LeftMouse>gx')
-
--- CONFIGURAÇÃO DE CORES DO TERMINAL (Alta Visibilidade)
-local function set_terminal_colors()
-    -- Fundo mais escuro para contraste máximo com as cores neon
-    vim.api.nvim_set_hl(0, "Terminal", { bg = "#0d0d14", fg = "#ffffff" })
-    
-    -- Cores ANSI Ultra-Vibrantes (Estilo High-Contrast)
-    vim.g.terminal_color_0  = "#0d0d14"
-    vim.g.terminal_color_1  = "#FF3333" -- Vermelho Puro (Erro)
-    vim.g.terminal_color_2  = "#33FF33" -- Verde Neon
-    vim.g.terminal_color_3  = "#FFFF00" -- Amarelo Puro (Warning)
-    vim.g.terminal_color_4  = "#3399FF" -- Azul Brilhante
-    vim.g.terminal_color_5  = "#FF33FF" -- Magenta
-    vim.g.terminal_color_6  = "#00FFFF" -- Cyan Neon
-    vim.g.terminal_color_7  = "#FFFFFF" -- Branco Puro
-    
-    -- Cores Brilhantes (Bright Variants)
-    vim.g.terminal_color_8  = "#555555"
-    vim.g.terminal_color_9  = "#FF6666"
-    vim.g.terminal_color_10 = "#66FF66"
-    vim.g.terminal_color_11 = "#FFFF66"
-    vim.g.terminal_color_12 = "#66B2FF"
-    vim.g.terminal_color_13 = "#FF66FF"
-    vim.g.terminal_color_14 = "#66FFFF"
-    vim.g.terminal_color_15 = "#F0F0F0"
-end
-
--- Aplicar ao carregar e sempre que o tema mudar
-vim.api.nvim_create_autocmd("ColorScheme", { callback = set_terminal_colors })
-set_terminal_colors()
-
--- NEOVIDE
-if vim.g.neovide then
-    vim.g.neovide_fullscreen = true
-    vim.o.guifont = "Consolas:h11"
-    vim.g.neovide_scale_factor = 1.0
-    vim.g.neovide_opacity = 0.97
-    vim.keymap.set("n", "<C-=>", function() vim.g.neovide_scale_factor = vim.g.neovide_scale_factor * 1.1 end)
-    vim.keymap.set("n", "<C-+>", function() vim.g.neovide_scale_factor = vim.g.neovide_scale_factor * 1.1 end)
-    vim.keymap.set("n", "<C-->", function() vim.g.neovide_scale_factor = vim.g.neovide_scale_factor / 1.1 end)
-end
