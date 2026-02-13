@@ -113,7 +113,19 @@ require("lazy").setup({
       }
     end
   },
-  { 'akinsho/toggleterm.nvim', config = function() require("toggleterm").setup({ open_mapping = [[<C-ç>]], direction = 'horizontal', size = 12, dir = "curr_dir" }) end },
+  { 'akinsho/toggleterm.nvim', config = function() 
+    require("toggleterm").setup({ 
+      open_mapping = [[<C-ç>]], 
+      direction = 'horizontal', 
+      size = 12, 
+      dir = "curr_dir",
+      highlights = {
+        Normal = { guibg = "#0d0d14" },
+        NormalFloat = { guibg = "#0d0d14" },
+        FloatBorder = { guifg = "#33FF33", guibg = "#0d0d14" },
+      }
+    }) 
+  end },
   { 
     'mg979/vim-visual-multi', 
     init = function() 
@@ -272,28 +284,30 @@ keymap('n', '<C-LeftMouse>', 'gx')
 keymap('t', '<C-LeftMouse>', [[<C-\><C-n><LeftMouse>gx]])
 keymap('i', '<C-LeftMouse>', '<Esc><LeftMouse>gx')
 
--- CONFIGURAÇÃO DE CORES DO TERMINAL (ToggleTerm / Neovide)
+-- CONFIGURAÇÃO DE CORES DO TERMINAL (Alta Visibilidade)
 local function set_terminal_colors()
-    -- Fundo e Texto Padrão para o Terminal
-    vim.api.nvim_set_hl(0, "Terminal", { bg = "#1e1e2e", fg = "#cdd6f4" })
+    -- Fundo mais escuro para contraste máximo com as cores neon
+    vim.api.nvim_set_hl(0, "Terminal", { bg = "#0d0d14", fg = "#ffffff" })
     
-    -- Cores ANSI (Afetam a saída de comandos como ESLint)
-    vim.g.terminal_color_0  = "#1e1e2e" -- Black
-    vim.g.terminal_color_1  = "#ff6b6b" -- Red (Erros)
-    vim.g.terminal_color_2  = "#94d82d" -- Green
-    vim.g.terminal_color_3  = "#f9c74f" -- Yellow (Warnings)
-    vim.g.terminal_color_4  = "#4dabf7" -- Blue
-    vim.g.terminal_color_5  = "#b197fc" -- Magenta
-    vim.g.terminal_color_6  = "#3bc9db" -- Cyan
-    vim.g.terminal_color_7  = "#cdd6f4" -- White
-    vim.g.terminal_color_8  = "#45475a" -- Bright Black
-    vim.g.terminal_color_9  = "#ff8787" -- Bright Red
-    vim.g.terminal_color_10 = "#aff152" -- Bright Green
-    vim.g.terminal_color_11 = "#fadb7d" -- Bright Yellow
-    vim.g.terminal_color_12 = "#74c0fc" -- Bright Blue
-    vim.g.terminal_color_13 = "#d0bfff" -- Bright Magenta
-    vim.g.terminal_color_14 = "#66d9e8" -- Bright Cyan
-    vim.g.terminal_color_15 = "#f8f9fa" -- Bright White
+    -- Cores ANSI Ultra-Vibrantes (Estilo High-Contrast)
+    vim.g.terminal_color_0  = "#0d0d14"
+    vim.g.terminal_color_1  = "#FF3333" -- Vermelho Puro (Erro)
+    vim.g.terminal_color_2  = "#33FF33" -- Verde Neon
+    vim.g.terminal_color_3  = "#FFFF00" -- Amarelo Puro (Warning)
+    vim.g.terminal_color_4  = "#3399FF" -- Azul Brilhante
+    vim.g.terminal_color_5  = "#FF33FF" -- Magenta
+    vim.g.terminal_color_6  = "#00FFFF" -- Cyan Neon
+    vim.g.terminal_color_7  = "#FFFFFF" -- Branco Puro
+    
+    -- Cores Brilhantes (Bright Variants)
+    vim.g.terminal_color_8  = "#555555"
+    vim.g.terminal_color_9  = "#FF6666"
+    vim.g.terminal_color_10 = "#66FF66"
+    vim.g.terminal_color_11 = "#FFFF66"
+    vim.g.terminal_color_12 = "#66B2FF"
+    vim.g.terminal_color_13 = "#FF66FF"
+    vim.g.terminal_color_14 = "#66FFFF"
+    vim.g.terminal_color_15 = "#F0F0F0"
 end
 
 -- Aplicar ao carregar e sempre que o tema mudar
