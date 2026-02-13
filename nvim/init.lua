@@ -11,6 +11,8 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+local keymap = vim.keymap.set -- DEFINIR KEYMAP GLOBALMENTE
+
 require("lazy").setup({
   -- UI & THEME
   { 
@@ -273,7 +275,6 @@ vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged", "FocusLost" }, {
   end,
 })
 
-local keymap = vim.keymap.set
 keymap('n', '<C-p>', ':Telescope find_files<CR>')
 keymap('n', '<C-S-F>', ':Telescope live_grep<CR>')
 keymap('n', '<C-S-E>', ':NvimTreeToggle<CR>')
