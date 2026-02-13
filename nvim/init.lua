@@ -161,6 +161,10 @@ vim.api.nvim_set_hl(0, 'LineNrAbove', { fg = '#008800' })
 vim.api.nvim_set_hl(0, 'LineNrBelow', { fg = '#008800' })
 vim.api.nvim_set_hl(0, 'CursorLineNr', { fg = '#00ff00', bold = true })
 
+-- Cor do Cursor (Amarelo)
+vim.api.nvim_set_hl(0, 'Cursor', { bg = '#ffff00', fg = '#000000' })
+vim.opt.guicursor = "n-v-c-sm:block-Cursor,i-ci-ve:ver25-Cursor,r-cr-o:hor20-Cursor"
+
 local keymap = vim.keymap.set
 keymap('n', '<C-p>', ':Telescope find_files<CR>')
 keymap('n', '<C-S-F>', ':Telescope live_grep<CR>')
