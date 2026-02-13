@@ -289,7 +289,9 @@ keymap('n', '<leader>xx', '<cmd>Trouble diagnostics toggle filter.buf=0<CR>') --
 keymap({'n', 'i', 'v'}, '<C-s>', '<Esc>:w<CR>')
 keymap("n", "<C-k>", "15kzz")
 keymap("n", "<C-j>", "15jzz")
-keymap("n", "<M-S-F>", function() require("conform").format({ lsp_fallback = true }) end)
+keymap("n", "<M-S-F>", function() 
+    require("conform").format({ lsp_fallback = true, async = true }) 
+end)
 
 -- Toggle Codeium Auto-complete
 local codeium_active = true
