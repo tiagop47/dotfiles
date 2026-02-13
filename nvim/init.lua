@@ -90,18 +90,6 @@ require("lazy").setup({
     end,
   },
 
-  -- SonarLint (Análise estática profissional)
-  {
-    'https://gitlab.com/schrieveslaach/sonarlint.nvim',
-    dependencies = { 'neovim/nvim-lspconfig' },
-    config = function()
-      require('sonarlint').setup({
-        server_path = vim.fn.expand('$HOME/.local/share/sonarlint/extension/server/sonarlint-ls.jar'),
-        filetypes = { 'javascript', 'typescript', 'java', 'html' }
-      })
-    end
-  },
-
   -- Linter (Análise estilo Sonar)
   {
     'mfussenegger/nvim-lint',
