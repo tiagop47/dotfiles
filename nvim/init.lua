@@ -19,6 +19,10 @@ vim.opt.cursorline = true
 vim.opt.clipboard = "unnamedplus"
 vim.opt.termguicolors = true
 vim.opt.scrolloff = 8
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+vim.opt.softtabstop = 2
 
 local keymap = vim.keymap.set -- DEFINIR KEYMAP GLOBALMENTE
 
@@ -59,8 +63,13 @@ require("lazy").setup({
       local status, configs = pcall(require, "nvim-treesitter.configs")
       if not status then return end
       configs.setup({
-        ensure_installed = { "java", "javascript", "typescript", "html", "css", "lua", "json" },
-        highlight = { enable = true },
+        ensure_installed = { "java", "javascript", "typescript", "html", "css", "lua", "json", "markdown", "markdown_inline", "vim", "vimdoc", "query" },
+        sync_install = false,
+        auto_install = true,
+        highlight = { 
+          enable = true,
+          additional_vim_regex_highlighting = false,
+        },
         autotag = { enable = true },
       })
     end
@@ -170,7 +179,7 @@ require("lazy").setup({
   { 'akinsho/toggleterm.nvim', config = function() 
     require("toggleterm").setup({ 
       open_mapping = [[<C-ç>]], 
-      direction = 'horizontal', 
+      direction = 'float', 
       size = 12, 
       dir = "curr_dir",
       highlights = {
@@ -222,12 +231,19 @@ keymap("n", "<leader>dr", function() require("dap").repl.open() end)
 
 require('mason').setup({})
 require('mason-lspconfig').setup({
-  ensure_installed = {'vtsls', 'jdtls', 'html', 'eslint'},
+  ensure_installed = {'vtsls', 'jdtls', 'html', 'eslint', 'emmet_ls'},
   handlers = {
     lsp_zero.default_setup,
     html = function()
       require('lspconfig').html.setup({
-        capabilities = require('cmp_nvim_lsp').default_capabilities()
+        capabilities = require('cmp_nvim_lsp').default_capabilities(),
+        filetypes = { "html", "javascript", "javascriptreact", "typescriptreact", "css" }
+      })
+    end,
+    emmet_ls = function()
+      require('lspconfig').emmet_ls.setup({
+        capabilities = require('cmp_nvim_lsp').default_capabilities(),
+        filetypes = { "html", "javascript", "javascriptreact", "typescriptreact", "css", "sass", "scss", "less" },
       })
     end,
     -- Configuração especial para JDTLS (Java) integrada com DAP
