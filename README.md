@@ -1,8 +1,8 @@
-# 🚀 tiagop47 Dotfiles - WSL & Neovim Setup
+# tiagop47 Dotfiles - WSL & Neovim Setup
 
 Este repositório contém a minha configuração pessoal para um ambiente de desenvolvimento produtivo no WSL (Ubuntu), focado na experiência "VS Code" dentro do Neovim, utilizando o Neovide como interface gráfica no Windows.
 
-## 📦 O que está incluído?
+## O que está incluído?
 - **Neovim (v0.10+):** Configuração completa em Lua com Lazy.nvim.
 - **Zsh + Oh My Zsh:** Terminal turbinado com aliases úteis.
 - **Starship:** Prompt minimalista e rápido.
@@ -11,7 +11,7 @@ Este repositório contém a minha configuração pessoal para um ambiente de des
 
 ---
 
-## 🛠️ Instalação Passo a Passo
+## Instalação Passo a Passo
 
 ### 1. Pré-requisitos (WSL/Ubuntu)
 Primeiro, garante que o teu sistema está atualizado e com as ferramentas base:
@@ -55,7 +55,7 @@ cp ~/dotfiles/starship/starship.toml ~/.config/starship.toml
 
 ---
 
-## 🖥️ Configuração no Windows (Neovide)
+## Configuração no Windows (Neovide)
 
 1. Descarrega e instala o **[Neovide](https://neovide.dev/)**.
 2. Instala a fonte **[FiraCode Nerd Font](https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/FiraCode.zip)** no Windows (instala todas as variantes: Bold, Italic, etc.).
@@ -67,7 +67,7 @@ cp ~/dotfiles/starship/starship.toml ~/.config/starship.toml
 
 ---
 
-## ⌨️ Atalhos Principais (Estilo VS Code)
+## Atalhos Principais (Estilo VS Code)
 
 | Tecla | Acção |
 | :--- | :--- |
@@ -84,7 +84,7 @@ cp ~/dotfiles/starship/starship.toml ~/.config/starship.toml
 
 ---
 
-## 🛠️ Manutenção
+## Manutenção
 Para atualizar o repositório com novas mudanças:
 ```bash
 cd ~/dotfiles
