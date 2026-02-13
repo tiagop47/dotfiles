@@ -135,6 +135,7 @@ require("lazy").setup({
   },
 
   -- UTILS
+  { 'windwp/nvim-autopairs', config = function() require("nvim-autopairs").setup {} end },
   { 'Exafunction/codeium.vim', config = function() end },
   {
     'barrett-ruth/live-server.nvim',
@@ -222,6 +223,9 @@ require('mason-lspconfig').setup({
 
 -- Configuração do Autocomplete (CMP)
 local cmp = require('cmp')
+local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
+
 cmp.setup({
   mapping = cmp.mapping.preset.insert({
     ['<CR>'] = cmp.mapping.confirm({select = true}), -- Enter para aceitar
