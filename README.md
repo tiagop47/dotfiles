@@ -8,6 +8,8 @@ Este repositório contém a minha configuração pessoal para um ambiente de des
 - **Starship:** Prompt minimalista e rápido.
 - **LSP & Análise:** Suporte para Java, JavaScript, HTML, CSS, ESLint e ErrorLens.
 - **Neovide:** Configuração para aceleração por GPU e animações fluidas.
+- **Live Server:** Visualização em tempo real para projetos Web.
+- **AI Completion:** Integração com Codeium.
 
 ---
 
@@ -17,6 +19,8 @@ Este repositório contém a minha configuração pessoal para um ambiente de des
 Primeiro, garante que o teu sistema está atualizado e com as ferramentas base:
 ```bash
 sudo apt update && sudo apt install -y zsh curl git nodejs npm default-jdk ripgrep fd-find
+# Necessário para o Live Server
+sudo npm install -g live-server
 ```
 
 ### 2. Configurar o Shell (Zsh & Starship)
@@ -36,21 +40,22 @@ sudo add-apt-repository ppa:neovim-ppa/unstable -y
 sudo apt update && sudo apt install neovim -y
 ```
 
-### 4. Aplicar os Dotfiles
-Clona este repositório e vincula os ficheiros:
+### 4. Aplicar os Dotfiles (Symlinks)
+Clona este repositório e vincula os ficheiros usando links simbólicos:
 ```bash
 git clone https://github.com/tiagop47/dotfiles.git ~/dotfiles
 
 # Neovim
 mkdir -p ~/.config/nvim
-cp ~/dotfiles/init.lua ~/.config/nvim/init.lua
+ln -s ~/dotfiles/nvim/init.lua ~/.config/nvim/init.lua
 
 # Zsh
-cp ~/dotfiles/zsh/zshrc ~/.zshrc
+rm ~/.zshrc
+ln -s ~/dotfiles/zsh/zshrc ~/.zshrc
 
 # Starship
 mkdir -p ~/.config
-cp ~/dotfiles/starship/starship.toml ~/.config/starship.toml
+ln -s ~/dotfiles/starship/starship.toml ~/.config/starship.toml
 ```
 
 ---
@@ -80,6 +85,8 @@ cp ~/dotfiles/starship/starship.toml ~/.config/starship.toml
 | `F12` | Ir para Definição |
 | `Ctrl + S` | Guardar Ficheiro |
 | `Ctrl + Z` | Desfazer (Undo) |
+| `Alt + L + O` | **Toggle Live Server** (Abre index.html da raiz) |
+| `Ctrl + Shift + C` | **Toggle Codeium Auto-complete** |
 | `Ctrl + + / -` | Aumentar/Diminuir Zoom |
 
 ---
@@ -89,6 +96,6 @@ Para atualizar o repositório com novas mudanças:
 ```bash
 cd ~/dotfiles
 git add .
-git commit -m "Update config"
+git commit -m "Update config: Live Server, Codeium toggle and Green Line Numbers"
 git push
 ```
