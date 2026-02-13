@@ -72,7 +72,12 @@ require("lazy").setup({
     },
   },
 
-  -- DIAGNÓSTICOS (ERRORLENS)
+  -- DIAGNÓSTICOS (ERRORLENS & TROUBLE)
+  {
+    "folke/trouble.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {},
+  },
   {
     "Maan2003/lsp_lines.nvim",
     config = function()
@@ -226,6 +231,8 @@ local keymap = vim.keymap.set
 keymap('n', '<C-p>', ':Telescope find_files<CR>')
 keymap('n', '<C-S-F>', ':Telescope live_grep<CR>')
 keymap('n', '<C-S-E>', ':NvimTreeToggle<CR>')
+keymap('n', '<M-m>', '<cmd>Trouble diagnostics toggle<CR>') -- Alt + M para ver todos os erros (ESLint, etc)
+keymap('n', '<leader>xx', '<cmd>Trouble diagnostics toggle filter.buf=0<CR>') -- Erros apenas do ficheiro atual
 keymap({'n', 'i', 'v'}, '<C-s>', '<Esc>:w<CR>')
 keymap("n", "<C-k>", "15kzz")
 keymap("n", "<C-j>", "15jzz")
@@ -269,6 +276,7 @@ end)
 
 -- TESTES (Agora com Espaço como Leader)
 keymap("n", "<leader>tr", function() require("neotest").run.run() end)
+keymap("n", "<leader>tl", "<cmd>Trouble qflist toggle<CR>") -- Ver lista de testes/erros no Trouble
 keymap("n", "<leader>ts", function() require("neotest").summary.toggle() end)
 keymap("n", "<leader>to", function() require("neotest").output.open({ enter = true }) end)
 keymap("n", "<leader>gr", ":GradleRun<CR>")
