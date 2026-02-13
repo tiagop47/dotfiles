@@ -143,7 +143,28 @@ end)
 require('mason').setup({})
 require('mason-lspconfig').setup({
   ensure_installed = {'vtsls', 'jdtls', 'html', 'eslint'},
-  handlers = { lsp_zero.default_setup },
+  handlers = {
+    lsp_zero.default_setup,
+    html = function()
+      require('lspconfig').html.setup({
+        capabilities = require('cmp_nvim_lsp').default_capabilities()
+      })
+    end,
+  },
+})
+
+-- Configuração do Autocomplete (CMP)
+local cmp = require('cmp')
+cmp.setup({
+  mapping = cmp.mapping.preset.insert({
+    ['<CR>'] = cmp.mapping.confirm({select = true}), -- Enter para aceitar
+    ['<Tab>'] = cmp.mapping.select_next_item(),    -- Tab para o próximo
+    ['<S-Tab>'] = cmp.mapping.select_prev_item(), -- Shift+Tab para o anterior
+  }),
+  sources = {
+    {name = 'nvim_lsp'},
+    {name = 'luasnip'},
+  }
 })
 
 -- OPÇÕES & ATALHOS
@@ -196,13 +217,17 @@ keymap('n', '<M-l>o', function()
         live_server_running = false
         print("Live Server Parado")
     else
-        -- Abre o ficheiro atual no browser
         local current_file = vim.fn.expand('%')
         if current_file == "" then current_file = "index.html" end
         
-        vim.cmd('LiveServerStart ' .. current_file)
+        -- Forçar porta 8080 e abrir o ficheiro atual
+        vim.g.live_server = {
+            args = { "--port=8080", "--open=" .. current_file }
+        }
+        
+        vim.cmd('LiveServerStart')
         live_server_running = true
-        print("Live Server Iniciado em: " .. current_file)
+        print("Live Server em http://127.0.0.1:8080/ a abrir " .. current_file)
     end
 end)
 
@@ -217,6 +242,11 @@ keymap("i", "<C-v>", '<C-r>+')
 keymap("c", "<C-v>", '<C-r>+') -- Adicionado para colar em prompts/comando
 keymap("n", "<C-v>", '"+p')
 keymap({'n', 'v', 'i'}, '<C-z>', '<Esc>u')
+
+-- Abrir links com Ctrl + Clique (Estilo VS Code)
+keymap('n', '<C-LeftMouse>', 'gx')
+keymap('t', '<C-LeftMouse>', [[<C-\><C-n><LeftMouse>gx]])
+keymap('i', '<C-LeftMouse>', '<Esc><LeftMouse>gx')
 
 -- NEOVIDE
 if vim.g.neovide then
