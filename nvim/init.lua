@@ -53,7 +53,20 @@ require("lazy").setup({
   -- PRODUTIVIDADE PROFISSIONAL (O que faltava)
   { "lewis6991/gitsigns.nvim", opts = {} }, -- Indicadores de Git na margem
   { "numToStr/Comment.nvim", opts = {} }, -- Comentários fáceis com `gcc` ou `gc`
-  { "echasnovski/mini.surround", opts = {} }, -- Manipular aspas, parênteses, etc.
+  {
+    "echasnovski/mini.surround",
+    opts = {
+      mappings = {
+        add = "gsa",
+        delete = "gsd",
+        find = "gsf",
+        find_left = "gsF",
+        highlight = "gsh",
+        replace = "gsr",
+        update_n_lines = "gsn",
+      },
+    },
+  }, -- Manipular aspas, parênteses, etc.
   { "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} }, -- Guias de indentação
   { "windwp/nvim-autopairs", config = true },
 
