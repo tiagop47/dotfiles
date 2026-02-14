@@ -28,6 +28,7 @@ opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 opt.inccommand = "split"
 opt.cursorline = true
 opt.laststatus = 3
+opt.showtabline = 0
 
 -- Neovide
 if vim.g.neovide then

@@ -53,11 +53,22 @@ require("lazy").setup({
     },
     config = function()
       local telescope = require('telescope')
+      local function paste_from_clipboard()
+        vim.api.nvim_paste(vim.fn.getreg("+"), true, -1)
+      end
       telescope.setup({
         defaults = {
           sorting_strategy = 'ascending',
           layout_config = { prompt_position = 'top' },
           file_ignore_patterns = { 'node_modules', '.git/' },
+          mappings = {
+            i = {
+              ["<C-v>"] = paste_from_clipboard,
+            },
+            n = {
+              ["<C-v>"] = paste_from_clipboard,
+            },
+          },
         },
         pickers = {
           find_files = { hidden = true },

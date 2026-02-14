@@ -106,9 +106,13 @@ map("t", "<C-v>", [[<C-\><C-n>"+pi]], "Colar no terminal", { noremap = true })
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "TelescopePrompt",
   callback = function()
-    -- Mapear Ctrl+V para colar do clipboard do sistema
-    map("i", "<C-v>", "<C-r>+", "Colar no Telescope", { buffer = true })
-    map("n", "<C-v>", '"+p', "Colar no Telescope", { buffer = true })
+    local function paste_clipboard()
+      vim.api.nvim_paste(vim.fn.getreg("+"), true, -1)
+    end
+
+    -- Garantir que o prompt abre pronto para escrever/colar
+    vim.cmd("startinsert")
+    map({ "i", "n" }, "<C-v>", paste_clipboard, "Colar no Telescope", { buffer = true })
   end,
 })
 
