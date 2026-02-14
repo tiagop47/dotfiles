@@ -20,6 +20,7 @@ opt.ignorecase = true
 opt.smartcase = true
 opt.updatetime = 250
 opt.timeoutlen = 300
+opt.cmdheight = 0
 opt.splitright = true
 opt.splitbelow = true
 opt.list = true

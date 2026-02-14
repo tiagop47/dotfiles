@@ -39,7 +39,42 @@ require("lazy").setup({
       },
     } 
   },
-  { 'nvim-telescope/telescope.nvim', dependencies = { 'nvim-lua/plenary.nvim' } },
+  {
+    'nvim-telescope/telescope.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      {
+        'nvim-telescope/telescope-fzf-native.nvim',
+        build = 'make',
+        cond = function()
+          return vim.fn.executable('make') == 1
+        end,
+      },
+    },
+    config = function()
+      local telescope = require('telescope')
+      telescope.setup({
+        defaults = {
+          sorting_strategy = 'ascending',
+          layout_config = { prompt_position = 'top' },
+          file_ignore_patterns = { 'node_modules', '.git/' },
+        },
+        pickers = {
+          find_files = { hidden = true },
+        },
+        extensions = {
+          fzf = {
+            fuzzy = true,
+            override_generic_sorter = true,
+            override_file_sorter = true,
+            case_mode = 'smart_case',
+          },
+        },
+      })
+      pcall(telescope.load_extension, 'fzf')
+      pcall(telescope.load_extension, 'refactoring')
+    end
+  },
   { 
     'nvim-lualine/lualine.nvim', 
     dependencies = { 'nvim-tree/nvim-web-devicons', 'SmiteshP/nvim-navic' }, 
@@ -52,7 +87,22 @@ require("lazy").setup({
 
   -- PRODUTIVIDADE PROFISSIONAL (O que faltava)
   { "lewis6991/gitsigns.nvim", opts = {} }, -- Indicadores de Git na margem
+  { "folke/which-key.nvim", opts = {} }, -- Ajuda visual para atalhos
+  {
+    "sindrets/diffview.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+  }, -- Visualização de diffs estilo IDE
   { "numToStr/Comment.nvim", opts = {} }, -- Comentários fáceis com `gcc` ou `gc`
+  {
+    "ThePrimeagen/refactoring.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "nvim-treesitter/nvim-treesitter", "nvim-telescope/telescope.nvim" },
+    opts = {},
+  }, -- Refactors tipo IDE (extract/inline/etc.)
+  {
+    "folke/persistence.nvim",
+    event = "BufReadPre",
+    opts = {},
+  }, -- Sessões por projeto
   {
     "echasnovski/mini.surround",
     opts = {
@@ -118,12 +168,55 @@ require("lazy").setup({
   },
 
   -- DIAGNÓSTICOS & UI
-  { "folke/trouble.nvim", opts = {} },
+  {
+    "folke/trouble.nvim",
+    opts = {
+      auto_close = true,
+      auto_preview = true,
+      focus = true,
+      warn_no_results = false,
+      modes = {
+        lsp_references = {
+          params = {
+            include_declaration = true,
+          },
+        },
+      },
+    }
+  },
   -- Removido lsp_lines devido a instabilidade com versões novas do Neovim
 
 
   -- DEBUGGING & TESTES
-  { "mfussenegger/nvim-dap", dependencies = { "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" } },
+  {
+    "mfussenegger/nvim-dap",
+    dependencies = {
+      "nvim-neotest/nvim-nio",
+      {
+        "rcarriga/nvim-dap-ui",
+        config = function()
+          local dap = require("dap")
+          local dapui = require("dapui")
+
+          dapui.setup()
+
+          dap.listeners.after.event_initialized["dapui_config"] = function()
+            dapui.open()
+          end
+          dap.listeners.before.event_terminated["dapui_config"] = function()
+            dapui.close()
+          end
+          dap.listeners.before.event_exited["dapui_config"] = function()
+            dapui.close()
+          end
+        end,
+      },
+      {
+        "theHamsta/nvim-dap-virtual-text",
+        opts = {},
+      },
+    }
+  },
   {
     "nvim-neotest/neotest",
     dependencies = { "nvim-neotest/nvim-nio", "rcasia/neotest-java", "haydenmeade/neotest-jest" },
@@ -156,6 +249,17 @@ require("lazy").setup({
       }
     end 
   },
+  {
+    "stevearc/overseer.nvim",
+    opts = {
+      task_list = {
+        direction = "bottom",
+        min_height = 12,
+        max_height = 18,
+        default_detail = 1,
+      },
+    },
+  }, -- Task runner (build/test/run)
   { "karb94/neoscroll.nvim", config = true },
 })
 
@@ -170,7 +274,7 @@ end)
 
 require('mason').setup({})
 require('mason-lspconfig').setup({
-  ensure_installed = {'vtsls', 'angularls', 'eslint', 'html', 'cssls', 'emmet_ls'},
+  ensure_installed = {'vtsls', 'angularls', 'eslint', 'html', 'cssls', 'emmet_ls', 'jdtls'},
   handlers = {
     lsp_zero.default_setup,
     angularls = function()
@@ -183,7 +287,7 @@ require('mason-lspconfig').setup({
 })
 
 require('mason-tool-installer').setup({
-  ensure_installed = { 'prettier', 'prettierd', 'eslint_d' }
+  ensure_installed = { 'prettier', 'prettierd', 'eslint_d', 'jdtls' }
 })
 
 -- CMP (Autocomplete)
@@ -198,6 +302,20 @@ cmp.setup({
 })
 
 require("config.keymaps")
+
+pcall(function()
+  local wk = require("which-key")
+  wk.add({
+    { "<leader>f", group = "Find" },
+    { "<leader>g", group = "Git" },
+    { "<leader>o", group = "Tasks" },
+    { "<leader>r", group = "Refactor" },
+    { "<leader>s", group = "Session" },
+    { "<leader>t", group = "Tests" },
+    { "<leader>x", group = "Diagnostics" },
+    { "<leader>d", group = "Debug" },
+  })
+end)
 
 -- Auto-save on focus lost / leave insert
 vim.diagnostic.config({
