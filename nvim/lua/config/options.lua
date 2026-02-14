@@ -55,7 +55,6 @@ if vim.g.neovide then
     vim.g.neovide_fullscreen = true
     vim.o.guifont = "Consolas:h12" -- Aumentado para h12
     vim.g.neovide_scale_factor = 1.0
-    vim.g.neovide_opacity = 0.97
 end
 
 -- Função para forçar cores personalizadas (Verde Neon e Amarelo Torrado)
