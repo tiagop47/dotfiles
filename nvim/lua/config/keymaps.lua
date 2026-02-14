@@ -102,20 +102,6 @@ map("c", "<C-v>", "<C-r>+", "Colar do clipboard", { noremap = true })
 -- Clipboard no TERMINAL
 map("t", "<C-v>", [[<C-\><C-n>"+pi]], "Colar no terminal", { noremap = true })
 
--- Clipboard no TELESCOPE (Ctrl+P e Ctrl+Shift+F)
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "TelescopePrompt",
-  callback = function()
-    local function paste_clipboard()
-      vim.api.nvim_paste(vim.fn.getreg("+"), true, -1)
-    end
-
-    -- Garantir que o prompt abre pronto para escrever/colar
-    vim.cmd("startinsert")
-    map({ "i", "n" }, "<C-v>", paste_clipboard, "Colar no Telescope", { buffer = true })
-  end,
-})
-
 -- UI / Plugins
 map("n", "<C-p>", "<cmd>Telescope find_files<CR>", "Procurar ficheiros")
 map("n", "<C-S-F>", "<cmd>Telescope live_grep<CR>", "Pesquisar no projeto")

@@ -65,9 +65,6 @@ require("lazy").setup({
             i = {
               ["<C-v>"] = paste_from_clipboard,
             },
-            n = {
-              ["<C-v>"] = paste_from_clipboard,
-            },
           },
         },
         pickers = {
