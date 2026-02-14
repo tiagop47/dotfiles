@@ -12,11 +12,15 @@ end
 
 local function open_path_in_browser(path)
   if vim.ui and vim.ui.open then
-    vim.ui.open(path)
-    return
+    local ok, opened = pcall(vim.ui.open, path)
+    if ok and opened ~= false then
+      return
+    end
   end
 
-  local opener = vim.fn.has("unix") == 1 and "xdg-open" or "open"
+  local uname = vim.loop.os_uname()
+  local is_wsl = vim.fn.has("wsl") == 1 or (uname and uname.release and uname.release:match("microsoft"))
+  local opener = is_wsl and "wslview" or (vim.fn.has("unix") == 1 and "xdg-open" or "open")
   vim.fn.jobstart({ opener, path }, { detach = true })
 end
 
@@ -82,6 +86,13 @@ local function run_project_task(task)
   require("config.tasks").run_preset(task)
 end
 
+local function code_action_only(kind, apply)
+  vim.lsp.buf.code_action({
+    apply = apply or false,
+    context = { only = { kind }, diagnostics = {} },
+  })
+end
+
 -- Navegação Geral
 map("n", "<C-k>", "15kzz", "Sobe 15 linhas")
 map("n", "<C-j>", "15jzz", "Desce 15 linhas")
@@ -94,7 +105,7 @@ map("v", "<C-d>", "<Plug>(VM-Find-Under)", "Selecionar próxima ocorrência", { 
 map("n", "<C-S-L>", "<Plug>(VM-Select-All)", "Selecionar todas as ocorrências", { noremap = true })
 
 -- Clipboard (Geral - Teclado e Rato)
-map({ 'n', 'v' }, "<C-c>", '"+y', "Copiar para clipboard", { noremap = true })
+map('v', "<C-c>", '"+y', "Copiar para clipboard", { noremap = true })
 map({ 'n', 'v' }, "<C-v>", '"+p', "Colar do clipboard", { noremap = true })
 map("i", "<C-v>", "<C-r>+", "Colar do clipboard", { noremap = true })
 map("c", "<C-v>", "<C-r>+", "Colar do clipboard", { noremap = true })
@@ -134,6 +145,12 @@ map("n", "<leader>grh", function() require("gitsigns").reset_hunk() end, "Reset 
 map("n", "]c", function() require("gitsigns").next_hunk() end, "Próximo hunk")
 map("n", "[c", function() require("gitsigns").prev_hunk() end, "Hunk anterior")
 
+-- AI (Codeium)
+map({ "n", "v" }, "<leader>ce", "<cmd>Codeium Chat<CR>", "Codeium: Explain (chat)")
+map({ "n", "i", "v" }, "<C-S-C>", function()
+  vim.cmd("Codeium Toggle")
+end, "Codeium: toggle auto-complete")
+
 -- LSP & Formatação
 map("n", "gd", vim.lsp.buf.definition, "Ir para definição")
 map("n", "gD", vim.lsp.buf.declaration, "Ir para declaração")
@@ -169,6 +186,15 @@ end, "Extract block")
 map("n", "<leader>rB", function()
   require("refactoring").refactor("Extract Block To File")
 end, "Extract block para ficheiro")
+map({ "n", "x" }, "<leader>jv", function()
+  code_action_only("refactor.extract.variable", true)
+end, "Java: extract variable")
+map({ "n", "x" }, "<leader>jm", function()
+  code_action_only("refactor.extract.function", true)
+end, "Java: extract method")
+map("n", "<leader>jo", function()
+  code_action_only("source.organizeImports", true)
+end, "Java: organizar imports")
 map("n", "[d", vim.diagnostic.goto_prev, "Diagnóstico anterior")
 map("n", "]d", vim.diagnostic.goto_next, "Próximo diagnóstico")
 map("n", "<leader>q", vim.diagnostic.setloclist, "Enviar diagnósticos para location list")
@@ -221,6 +247,13 @@ vim.api.nvim_create_autocmd("TermOpen", {
   pattern = "term://*",
   callback = function()
     local opts = { buffer = 0 }
+    map({ "t", "n" }, "<C-c>", function()
+      local job_id = vim.b.terminal_job_id
+      if job_id then
+        vim.fn.chansend(job_id, "\003")
+      end
+      vim.cmd("startinsert")
+    end, "Interromper comando no terminal", opts)
     map("t", "<esc>", [[<C-\><C-n>]], "Sair do modo terminal", opts)
     map("t", "jk", [[<C-\><C-n>]], "Sair do modo terminal", opts)
     map("t", "<C-h>", [[<C-\><C-n><C-W>h]], "Janela esquerda", opts)
@@ -282,9 +315,7 @@ vim.api.nvim_create_autocmd("FileType", {
         
         -- Verifica se é ficheiro e termina em .html
         if node and node.absolute_path and node.absolute_path:match("%.html$") then
-            local opener = vim.fn.has("unix") == 1 and "xdg-open" or "open"
-            -- Executa comando silencioso em background
-            vim.fn.jobstart({opener, node.absolute_path}, {detach = true})
+            open_path_in_browser(node.absolute_path)
             print("Report aberto no browser: " .. node.name)
         else
             -- Se não for HTML, abre o ficheiro no nvim (comportamento normal)

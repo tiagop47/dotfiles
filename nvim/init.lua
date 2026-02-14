@@ -137,7 +137,7 @@ require("lazy").setup({
       local status, configs = pcall(require, "nvim-treesitter.configs")
       if status then
         configs.setup({
-          ensure_installed = { "javascript", "typescript", "html", "css", "lua", "json", "markdown", "java" },
+          ensure_installed = { "javascript", "typescript", "html", "css", "lua", "json", "markdown", "markdown_inline", "java" },
           highlight = { enable = true },
           autotag = { enable = true },
         })
@@ -157,6 +157,16 @@ require("lazy").setup({
       {'hrsh7th/cmp-nvim-lsp'},
       {'L3MON4D3/LuaSnip'},
     }
+  },
+  {
+    "Exafunction/windsurf.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "hrsh7th/nvim-cmp",
+    },
+    config = function()
+      require("codeium").setup({})
+    end
   },
 
   -- FERRAMENTAS ANGULAR & JS
@@ -289,6 +299,23 @@ require('mason-lspconfig').setup({
       require('lspconfig').angularls.setup({
         -- Configuração para garantir que funciona em projetos Angular
         root_dir = require('lspconfig.util').root_pattern("angular.json", "nx.json", "package.json"),
+      })
+    end,
+    jdtls = function()
+      local lspconfig = require('lspconfig')
+      local util = require('lspconfig.util')
+      lspconfig.jdtls.setup({
+        root_dir = util.root_pattern(
+          "gradlew",
+          "mvnw",
+          ".git",
+          "pom.xml",
+          "build.gradle",
+          "build.gradle.kts",
+          "settings.gradle",
+          "settings.gradle.kts"
+        ),
+        single_file_support = false,
       })
     end,
   },

@@ -30,6 +30,26 @@ opt.cursorline = true
 opt.laststatus = 3
 opt.showtabline = 0
 
+-- Browser integration for WSL: always open links/files in Windows default browser.
+local uname = vim.loop.os_uname()
+local is_wsl = vim.fn.has("wsl") == 1 or (uname and uname.release and uname.release:match("microsoft"))
+if is_wsl and vim.fn.executable("wslview") == 1 then
+  vim.g.netrw_browsex_viewer = "wslview"
+  vim.env.BROWSER = "wslview"
+  vim.g.mkdp_browserfunc = "MKDP_browserfunc"
+
+  vim.ui.open = function(uri)
+    vim.fn.jobstart({ "wslview", uri }, { detach = true })
+    return true
+  end
+
+  vim.cmd([[
+    function! MKDP_browserfunc(url)
+      call system('wslview ' . shellescape(a:url))
+    endfunction
+  ]])
+end
+
 -- Neovide
 if vim.g.neovide then
     vim.g.neovide_fullscreen = true

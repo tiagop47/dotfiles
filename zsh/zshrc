@@ -64,6 +64,10 @@ alias cat='batcat --style=plain' # No Ubuntu o comando é batcat
 alias transf="cd /mnt/c/Users/tiago/Downloads"
 
 # WSL Specifics
+if [[ -t 0 ]]; then
+  # Allow Ctrl+S/Ctrl+Q to reach apps like Neovim (disable XON/XOFF flow control).
+  stty -ixon -ixoff 2>/dev/null
+fi
 
 # ---------- Inits ----------
 # Cache starship init for faster startup
@@ -125,4 +129,3 @@ nvid() {
 }
 alias nv='neovide.exe --wsl'
 alias neovide='neovide.exe --wsl'
-
