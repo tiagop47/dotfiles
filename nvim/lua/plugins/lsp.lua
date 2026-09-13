@@ -44,8 +44,10 @@ return {
              or code == "6133"    -- TS: declared but value is never read
              or code == "6196"    -- TS: unused type/import
              or code == "6192"    -- TS: unused import
-             or msg:find("is declared but its value is never read")
-             or msg:find("is defined but never used")
+             -- Naming rules / Underscores (úteis em testes estilo Metodo_Cenario_Resultado)
+             or msg:find("remove underscore")
+             or msg:find("identifiers should not contain underscores")
+             or code == "CA1707"
           then
             return false
           end
