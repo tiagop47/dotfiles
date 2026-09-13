@@ -19,6 +19,7 @@ o.scrolloff = 8
 o.updatetime = 250
 o.timeoutlen = 400
 o.undofile = true
+o.swapfile = false -- Desativa ficheiros .swp (evita avisos W325; undofile e auto-save tratam da segurança)
 o.cursorline = true
 o.report = 99999 -- Não mostra notificações/mensagens de "1 line less", "1 line deleted", etc.
 o.shortmess:append("sI") -- Silencia mensagens desnecessárias do intro e escrita
