@@ -20,6 +20,22 @@ return {
     },
     config = function()
       -- Configuração visual de Diagnósticos (erros com sublinhado ondulado como no VS Code)
+      -- Filtra avisos irritantes de estilo como "expression value is never used" (IDE0058)
+      local function filter_diagnostics(diagnostics)
+        return vim.tbl_filter(function(d)
+          local msg = d.message:lower()
+          if msg:find("expression value is never used") or (d.code and tostring(d.code) == "IDE0058") then
+            return false
+          end
+          return true
+        end, diagnostics)
+      end
+
+      local orig_set = vim.diagnostic.set
+      vim.diagnostic.set = function(namespace, bufnr, diagnostics, opts)
+        orig_set(namespace, bufnr, filter_diagnostics(diagnostics), opts)
+      end
+
       vim.diagnostic.config({
         underline = true,
         virtual_text = { prefix = "●", spacing = 2 },
