@@ -314,6 +314,56 @@ return {
           ["<CR>"] = cmp.mapping.confirm({ select = false }),
           ["<C-Space>"] = cmp.mapping.complete(),
         }),
+        window = {
+          completion = cmp.config.window.bordered({
+            border = "rounded",
+            winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
+          }),
+          documentation = cmp.config.window.bordered({
+            border = "rounded",
+            winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
+          }),
+        },
+        formatting = {
+          fields = { "kind", "abbr", "menu" },
+          format = function(entry, vim_item)
+            local icons = {
+              Text = "󰉿 Text",
+              Method = "󰆧 Method",
+              Function = "󰊕 Function",
+              Constructor = " Constructor",
+              Field = "󰜢 Field",
+              Variable = "󰀫 Variable",
+              Class = "󰠱 Class",
+              Interface = " Interface",
+              Module = " Module",
+              Property = "󰜢 Property",
+              Unit = "󰑭 Unit",
+              Value = "󰎠 Value",
+              Enum = " Enum",
+              Keyword = "󰌋 Keyword",
+              Snippet = " Snippet",
+              Color = "󰏘 Color",
+              File = "󰈙 File",
+              Reference = "󰈇 Reference",
+              Folder = "󰉋 Folder",
+              EnumMember = " EnumMember",
+              Constant = "󰏿 Constant",
+              Struct = "󰙅 Struct",
+              Event = " Event",
+              Operator = "󰆕 Operator",
+              TypeParameter = "󰅲 TypeParam",
+            }
+            vim_item.kind = icons[vim_item.kind] or vim_item.kind
+            vim_item.menu = ({
+              nvim_lsp = "[LSP]",
+              luasnip = "[Snippet]",
+              buffer = "[Buffer]",
+              path = "[Path]",
+            })[entry.source.name]
+            return vim_item
+          end,
+        },
         sources = cmp.config.sources({
           { name = "nvim_lsp", priority = 1000 },
           { name = "luasnip", priority = 750 },

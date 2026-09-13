@@ -218,6 +218,8 @@ return {
           lualine_x = { lsp_status, "encoding", "fileformat", "filetype" },
         },
       })
+      vim.o.showcmd = true
+      vim.o.showcmdloc = "statusline"
     end,
   },
 
