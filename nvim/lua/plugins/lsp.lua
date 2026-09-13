@@ -50,6 +50,10 @@ return {
             "FormattingOptions:EnableEditorConfigSupport=true",
             "Sdk:IncludePrereleases=true",
             "RoslynExtensionsOptions:EnableDecompilationSupport=true",
+            "RoslynExtensionsOptions:EnableAnalyzersSupport=true",
+            "RoslynExtensionsOptions:EnableImportCompletion=true",
+            "RoslynExtensionsOptions:DocumentAnalysisTimeoutMs=30000",
+            "MsBuild:LoadProjectsOnDemand=false",
           },
           settings = {
             FormattingOptions = {

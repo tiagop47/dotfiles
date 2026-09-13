@@ -1,6 +1,7 @@
 {
   "FormattingOptions": {
     "EnableEditorConfigSupport": true,
+    "OrganizeImports": true,
     "NewLine": "\r\n",
     "UseTabs": false,
     "TabSize": 4,
@@ -14,5 +15,14 @@
     "NewLinesForBracesInAnonymousTypes": true,
     "NewLinesForBracesInObjectCollectionArrayInitializers": true,
     "NewLinesForBracesInLambdaExpressionBody": true
+  },
+  "RoslynExtensionsOptions": {
+    "EnableDecompilationSupport": true,
+    "EnableAnalyzersSupport": true,
+    "EnableImportCompletion": true,
+    "DocumentAnalysisTimeoutMs": 30000
+  },
+  "MsBuild": {
+    "LoadProjectsOnDemand": false
   }
 }

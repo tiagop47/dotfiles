@@ -1,24 +1,29 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter",
+    lazy = false,
     build = ":TSUpdate",
     config = function()
-      local ok, ts = pcall(require, "nvim-treesitter")
-      if not ok then return end
+      local ts = require("nvim-treesitter")
 
-      pcall(function()
-        require("nvim-treesitter.install").compilers = { "zig", "clang", "gcc", "cl" }
-      end)
+      ts.setup({
+        install_dir = vim.fn.stdpath("data") .. "/site",
+      })
 
-      local configs_ok, ts_configs = pcall(require, "nvim-treesitter.configs")
-      if configs_ok then
-        ts_configs.setup({
-          ensure_installed = { "c", "c_sharp", "lua", "vim", "vimdoc", "javascript", "typescript", "html", "css", "json", "python" },
-          auto_install = true,
-          highlight = { enable = true },
-          indent = { enable = true },
-        })
-      end
+      ts.install({
+        "c", "c_sharp", "lua", "vim", "vimdoc", "javascript", "typescript",
+        "html", "css", "json", "python",
+      })
+
+      local group = vim.api.nvim_create_augroup("UserTreesitterHighlight", { clear = true })
+      vim.api.nvim_create_autocmd("FileType", {
+        group = group,
+        pattern = { "c", "cs", "lua", "javascript", "typescript", "html", "css", "json", "python" },
+        callback = function(args)
+          pcall(vim.treesitter.start, args.buf)
+          vim.bo[args.buf].indentexpr = "v:lua.vim.treesitter.indent()"
+        end,
+      })
     end,
   },
   {
