@@ -1,0 +1,53 @@
+{
+  "@for": {
+    "prefix": ["@for", "a-for", "ngfor", "for"],
+    "body": [
+      "@for (${1:item} of ${2:items}; track ${3:$1.id}) {",
+      "  $0",
+      "} @empty {",
+      "  <p>${4:Nenhum registo encontrado.}</p>",
+      "}"
+    ],
+    "description": "Angular 17+ Modern Control Flow @for loop"
+  },
+  "@if": {
+    "prefix": ["@if", "a-if", "ngif", "if"],
+    "body": [
+      "@if (${1:condition}) {",
+      "  $0",
+      "} @else {",
+      "  ",
+      "}"
+    ],
+    "description": "Angular 17+ Modern Control Flow @if block"
+  },
+  "@switch": {
+    "prefix": ["@switch", "a-switch", "switch"],
+    "body": [
+      "@switch (${1:condition}) {",
+      "  @case (${2:value}) {",
+      "    $0",
+      "  }",
+      "  @default {",
+      "    ",
+      "  }",
+      "}"
+    ],
+    "description": "Angular 17+ Modern Control Flow @switch block"
+  },
+  "@defer": {
+    "prefix": ["@defer", "a-defer", "defer"],
+    "body": [
+      "@defer (on ${1:viewport}) {",
+      "  $0",
+      "} @loading {",
+      "  <p>A carregar...</p>",
+      "} @placeholder {",
+      "  <p>Placeholder</p>",
+      "} @error {",
+      "  <p>Falha ao carregar componente.</p>",
+      "}"
+    ],
+    "description": "Angular 17+ Deferrable View block"
+  }
+}
