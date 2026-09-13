@@ -10,6 +10,16 @@ return {
         },
       })
       vim.cmd.colorscheme("github_dark_default")
+
+      -- O GitHub Dark deixa alguns grupos semânticos do LSP quase sem cor.
+      -- Estes grupos são importantes para distinguir métodos/tipos externos
+      -- (por exemplo, APIs provenientes de pacotes NuGet).
+      vim.api.nvim_set_hl(0, "@function.method", { fg = "#d2a8ff" })
+      vim.api.nvim_set_hl(0, "@method.call", { fg = "#d2a8ff" })
+      vim.api.nvim_set_hl(0, "@property", { fg = "#79c0ff" })
+      vim.api.nvim_set_hl(0, "@lsp.type.property", { fg = "#79c0ff" })
+      vim.api.nvim_set_hl(0, "@interface", { fg = "#ff7b72" })
+      vim.api.nvim_set_hl(0, "@lsp.type.interface", { fg = "#ff7b72" })
     end,
   },
   {
