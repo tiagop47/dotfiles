@@ -61,10 +61,20 @@ return {
       end
 
       vim.diagnostic.config({
-        underline = true,
-        virtual_text = { prefix = "●", spacing = 2 },
-        signs = true,
-        update_in_insert = true, -- Atualiza os erros instantaneamente enquanto digitas!
+        -- No VS Code, o texto ao lado da linha SÓ aparece para ERROS REAIS que partem a compilação!
+        virtual_text = {
+          prefix = "●",
+          spacing = 2,
+          severity = { min = vim.diagnostic.severity.ERROR },
+        },
+        -- Sublinhado apenas para Avisos e Erros (ignora sugestões de estilo/hints)
+        underline = {
+          severity = { min = vim.diagnostic.severity.WARN },
+        },
+        signs = {
+          severity = { min = vim.diagnostic.severity.WARN },
+        },
+        update_in_insert = false, -- No VS Code só valida quando pausas a digitação, não enquanto estás a meio de uma palavra!
         severity_sort = true,
         float = { border = "rounded", source = "always" },
       })
