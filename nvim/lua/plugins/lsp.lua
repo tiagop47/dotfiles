@@ -282,16 +282,33 @@ return {
           scss = true,
         }
 
-        -- Para ficheiros Web/HTML/Angular, usa Prettier se disponível (formatação idêntica ao VS Code)
-        if web_fts[ft] and (vim.fn.executable("prettier.cmd") == 1 or vim.fn.executable("prettier") == 1) then
-          local filepath = vim.api.nvim_buf_get_name(0)
-          if filepath ~= "" and vim.fn.filereadable(filepath) == 1 then
-            vim.cmd("silent update")
-            local cmd = string.format('prettier --write "%s"', filepath)
-            vim.fn.system(cmd)
-            vim.cmd("edit!")
+        -- Para ficheiros Web/HTML/Angular, formata com Prettier
+        local prettier_bin = vim.fn.exepath("prettier.cmd")
+        if prettier_bin == "" then prettier_bin = vim.fn.exepath("prettier") end
+        if prettier_bin == "" then
+          local global_npm_prettier = vim.fn.expand("$APPDATA/npm/prettier.cmd")
+          if vim.fn.filereadable(global_npm_prettier) == 1 then
+            prettier_bin = global_npm_prettier
+          end
+        end
+
+        if web_fts[ft] and prettier_bin ~= "" then
+          local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+          local input_text = table.concat(lines, "\n")
+          local parser = (ft == "html") and "html" or ((ft == "css" or ft == "scss") and "css" or ((ft == "json") and "json" or "typescript"))
+
+          local obj = vim.system({ prettier_bin, "--parser", parser }, { stdin = input_text }):wait()
+          if obj.code == 0 and obj.stdout and #obj.stdout > 0 then
+            local formatted = vim.split(obj.stdout:gsub("\r\n", "\n"), "\n", { trimempty = false })
+            -- Se a última linha for vazia após quebra, remove para não criar linha extra
+            if #formatted > 0 and formatted[#formatted] == "" then
+              table.remove(formatted, #formatted)
+            end
+            vim.api.nvim_buf_set_lines(0, 0, -1, false, formatted)
             vim.notify("Ficheiro formatado com Prettier!", vim.log.levels.INFO)
             return
+          elseif obj.stderr and #obj.stderr > 0 then
+            vim.notify("Erro no Prettier: " .. obj.stderr, vim.log.levels.WARN)
           end
         end
 

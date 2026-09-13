@@ -17,7 +17,10 @@ return {
           enable = true,
           additional_vim_regex_highlighting = false,
         },
-        indent = { enable = true },
+        indent = {
+          enable = true,
+          disable = { "html" }, -- O indentador de HTML do Tree-sitter tem um bug crónico que encosta tudo à esquerda
+        },
       })
     end,
   },
