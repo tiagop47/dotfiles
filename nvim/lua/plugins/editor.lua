@@ -319,8 +319,8 @@ return {
       for _, key in ipairs({ "<C-S-`>", "<C-S-'>", "<C-S-ç>", "<C-S-;>", "<C-:>", "<C-Ç>" }) do
         vim.keymap.set({ "n", "i", "t" }, key, new_terminal, { desc = "Novo terminal inferior" })
       end
-      vim.keymap.set({ "n", "i", "t" }, "<C-F12>", function() cycle_terminal(1) end, { desc = "Próximo terminal" })
-      vim.keymap.set({ "n", "i", "t" }, "<C-F11>", function() cycle_terminal(-1) end, { desc = "Terminal anterior" })
+      vim.keymap.set({ "n", "i", "t" }, "<A-F12>", function() cycle_terminal(1) end, { desc = "Próximo terminal" })
+      vim.keymap.set({ "n", "i", "t" }, "<A-F11>", function() cycle_terminal(-1) end, { desc = "Terminal anterior" })
       vim.keymap.set({ "n", "i", "t" }, "<C-S-t>", select_terminal, { desc = "Listar terminais abertos (menu interativo)" })
       vim.keymap.set({ "n", "i", "t" }, "<C-S-T>", select_terminal, { desc = "Listar terminais abertos (menu interativo)" })
       vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { desc = "Modo normal no terminal (permite navegar e clicar)" })

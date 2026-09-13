@@ -151,7 +151,23 @@ return {
         end
       end
 
-      -- F12: Ir para implementação / definição
+      -- Ctrl + F12: Mostrar todas as implementações da interface no Telescope
+      local function show_all_implementations()
+        local has_omnisharp_ext, omni_ext = pcall(require, "omnisharp_extended")
+        if has_omnisharp_ext and vim.bo.filetype == "cs" then
+          omni_ext.telescope_lsp_implementation()
+          return
+        end
+
+        local has_telescope, tb = pcall(require, "telescope.builtin")
+        if has_telescope then
+          tb.lsp_implementations()
+        else
+          vim.lsp.buf.implementation()
+        end
+      end
+
+      vim.keymap.set("n", "<C-F12>", show_all_implementations, { desc = "Mostrar todas as implementações da interface (Telescope)" })
       vim.keymap.set("n", "<F12>", go_to_implementation, { desc = "Ir para implementação/definição (com descompilação .NET)" })
 
       -- Ctrl + Clique esquerdo: Ir para implementação (abre Telescope se houver múltiplas)
