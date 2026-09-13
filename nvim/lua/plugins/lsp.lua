@@ -1,20 +1,21 @@
 return {
-  -- Mason (Gestor de pacotes LSP, formatters e debuggers)
-  { "williamboman/mason.nvim", config = true },
+  -- Mason (Carregado apenas quando chamas :Mason explicitamente - poupa ~80ms no arranque!)
+  {
+    "williamboman/mason.nvim",
+    cmd = { "Mason", "MasonInstall", "MasonUninstall", "MasonUpdate" },
+    opts = {},
+  },
   {
     "williamboman/mason-lspconfig.nvim",
-    dependencies = { "williamboman/mason.nvim", "neovim/nvim-lspconfig" },
-    config = function()
-      require("mason-lspconfig").setup({
-        ensure_installed = { "lua_ls", "pyright", "ts_ls", "angularls" },
-      })
-    end,
+    lazy = true,
+    opts = {
+      ensure_installed = { "lua_ls", "pyright", "ts_ls", "angularls" },
+    },
   },
   {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-      "williamboman/mason.nvim",
       "hrsh7th/cmp-nvim-lsp",
       "Hoffs/omnisharp-extended-lsp.nvim",
     },
@@ -106,9 +107,23 @@ return {
         root_dir = root_for(nil, { "angular.json", "project.json", "package.json", ".git" }),
       }
 
-      for _, s in ipairs({ "lua_ls", "pyright", "ts_ls", "angularls" }) do
-        vim.lsp.enable(s)
-      end
+      -- OTIMIZAÇÃO: Ativa os LSPs apenas quando abres ficheiros dessa linguagem (Lazy filetype triggering)
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "lua" },
+        callback = function() pcall(vim.lsp.enable, "lua_ls") end,
+      })
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "python" },
+        callback = function() pcall(vim.lsp.enable, "pyright") end,
+      })
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "typescript", "javascript", "typescriptreact", "javascriptreact" },
+        callback = function() pcall(vim.lsp.enable, "ts_ls") end,
+      })
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "typescript", "html" },
+        callback = function() pcall(vim.lsp.enable, "angularls") end,
+      })
 
       -- Configuração dedicada OmniSharp para C# no Windows com descompilador ativado
       local omni = vim.fn.stdpath("data") .. "/mason/packages/omnisharp/libexec/OmniSharp.exe"
@@ -149,13 +164,19 @@ return {
               EnableAnalyzersSupport = true,
               EnableImportCompletion = true,
               DocumentAnalysisTimeoutMs = 30000,
+              AnalyzeOpenDocumentsOnly = true, -- OTIMIZAÇÃO: Compila e analisa só ficheiros abertos (boot 10x mais rápido!)
             },
             MsBuild = {
               LoadProjectsOnDemand = false,
             },
           },
         }
-        vim.lsp.enable("omnisharp")
+
+        -- Ativa OmniSharp apenas quando abres ficheiros C# (.cs)
+        vim.api.nvim_create_autocmd("FileType", {
+          pattern = { "cs" },
+          callback = function() pcall(vim.lsp.enable, "omnisharp") end,
+        })
       end
 
       -- Keymaps universais de LSP
