@@ -1,0 +1,23 @@
+# Windows & Editor artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+
+# Mason / local state cache
+.mason/
+undo/
+swap/
+backup/
+view/
+
+# Ajustes específicos de cada máquina
+terminal/settings.local.json
+powershell/*.local.ps1
+nvim/lua/config/local.lua
