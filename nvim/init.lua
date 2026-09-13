@@ -1,10 +1,20 @@
-﻿-- Líderes
+-- Líderes
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- Bytecode caching para arranque rápido
 if vim.loader then
   vim.loader.enable()
+end
+
+-- Garante que binários do Mason e do NPM estão sempre no PATH interno do Neovim (Windows)
+local mason_bin = vim.fn.stdpath("data") .. "/mason/bin"
+local npm_bin = vim.fn.expand("$APPDATA/npm")
+if vim.fn.isdirectory(mason_bin) == 1 and not vim.env.PATH:find(mason_bin, 1, true) then
+  vim.env.PATH = mason_bin .. ";" .. vim.env.PATH
+end
+if vim.fn.isdirectory(npm_bin) == 1 and not vim.env.PATH:find(npm_bin, 1, true) then
+  vim.env.PATH = npm_bin .. ";" .. vim.env.PATH
 end
 
 -- 1. Opções base, atalhos universais, autocmds e Neovide

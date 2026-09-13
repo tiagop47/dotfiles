@@ -104,6 +104,20 @@ return {
       }
       vim.lsp.config.angularls = {
         capabilities = caps,
+        cmd = {
+          "ngserver.cmd",
+          "--stdio",
+          "--tsProbeLocations",
+          table.concat({
+            vim.fn.expand("$APPDATA/npm/node_modules"),
+            vim.fn.stdpath("data") .. "/mason/packages/typescript-language-server/node_modules",
+          }, ","),
+          "--ngProbeLocations",
+          table.concat({
+            vim.fn.expand("$APPDATA/npm/node_modules"),
+            vim.fn.stdpath("data") .. "/mason/packages/angular-language-server/node_modules",
+          }, ","),
+        },
         root_dir = root_for(nil, { "angular.json", "project.json", "package.json", ".git" }),
       }
 
@@ -251,8 +265,33 @@ return {
         go_to_implementation()
       end, { desc = "Ctrl+Clique: Ir para implementação (Telescope se múltiplas)" })
 
-      -- Alt+Shift+F: Formatar ficheiro
+      -- Alt+Shift+F: Formatar ficheiro (Prettier para HTML/Web/Angular, LSP para C#/Python/Lua)
       vim.keymap.set("n", "<A-S-f>", function()
+        local ft = vim.bo.filetype
+        local web_fts = {
+          html = true,
+          typescript = true,
+          javascript = true,
+          typescriptreact = true,
+          javascriptreact = true,
+          json = true,
+          css = true,
+          scss = true,
+        }
+
+        -- Para ficheiros Web/HTML/Angular, usa Prettier se disponível (formatação idêntica ao VS Code)
+        if web_fts[ft] and (vim.fn.executable("prettier.cmd") == 1 or vim.fn.executable("prettier") == 1) then
+          local filepath = vim.api.nvim_buf_get_name(0)
+          if filepath ~= "" and vim.fn.filereadable(filepath) == 1 then
+            vim.cmd("silent update")
+            local cmd = string.format('prettier --write "%s"', filepath)
+            vim.fn.system(cmd)
+            vim.cmd("edit!")
+            vim.notify("Ficheiro formatado com Prettier!", vim.log.levels.INFO)
+            return
+          end
+        end
+
         local clients = vim.lsp.get_clients({ bufnr = 0 })
         local can_format = false
         for _, client in ipairs(clients) do
@@ -266,7 +305,7 @@ return {
         else
           vim.cmd("normal! gg=G")
         end
-      end, { desc = "Formatar/indentar ficheiro" })
+      end, { desc = "Formatar/indentar ficheiro (Prettier / LSP)" })
     end,
   },
 
