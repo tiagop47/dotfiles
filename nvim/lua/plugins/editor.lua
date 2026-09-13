@@ -122,11 +122,7 @@ return {
           },
         },
         filesystem = {
-          bind_to_cwd = true,
-          cwd_target = {
-            sidebar = "tab",
-            current = "window",
-          },
+          bind_to_cwd = false,
           follow_current_file = {
             enabled = true,
             leave_dirs_open = false,
@@ -136,13 +132,22 @@ return {
           window = {
             mappings = {
               ["<Del>"] = "delete",
+              ["<BS>"] = "navigate_up",
+              ["u"] = "navigate_up",
+              ["."] = "set_root",
+              ["H"] = "toggle_hidden",
             },
           },
         },
       })
       -- Atalhos de navegação do FileTree
+      -- Ctrl+Shift+E foca o FileTree
       vim.keymap.set({ "n", "i", "v" }, "<C-S-e>", "<Cmd>Neotree focus<CR>", { desc = "Abrir/Focar FileTree (Ctrl+Shift+E)" })
       vim.keymap.set({ "n", "i", "v" }, "<C-S-E>", "<Cmd>Neotree focus<CR>", { desc = "Abrir/Focar FileTree (Ctrl+Shift+E)" })
+      -- Atalho rápido para repor o FileTree na raiz do projeto (cwd original onde abriste o nvim)
+      vim.keymap.set("n", "<leader>er", function()
+        vim.cmd("Neotree dir=" .. vim.fn.fnameescape(vim.fn.getcwd()))
+      end, { desc = "Repor FileTree na raiz do projeto" })
       vim.keymap.set({ "n", "i", "v", "t" }, "<A-b>", "<Cmd>Neotree close<CR>", { desc = "Fechar FileTree (Alt+B)" })
       vim.keymap.set({ "n", "i", "v", "t" }, "<A-B>", "<Cmd>Neotree close<CR>", { desc = "Fechar FileTree (Alt+B)" })
       vim.keymap.set("n", "<C-b>", "<Cmd>Neotree toggle<CR>", { desc = "Alternar FileTree (Ctrl+B)" })
