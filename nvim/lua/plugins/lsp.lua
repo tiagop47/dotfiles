@@ -107,6 +107,7 @@ return {
       }
       vim.lsp.config.angularls = {
         capabilities = caps,
+        filetypes = { "typescript", "html", "htmlangular" },
         cmd = {
           "ngserver.cmd",
           "--stdio",
@@ -138,7 +139,7 @@ return {
         callback = function() pcall(vim.lsp.enable, "ts_ls") end,
       })
       vim.api.nvim_create_autocmd("FileType", {
-        pattern = { "typescript", "html" },
+        pattern = { "typescript", "html", "htmlangular" },
         callback = function() pcall(vim.lsp.enable, "angularls") end,
       })
 
@@ -202,8 +203,38 @@ return {
       vim.keymap.set({ "n", "v" }, "<C-.>", vim.lsp.buf.code_action, { desc = "Sugestões e ações de código" })
       vim.keymap.set({ "n", "i" }, "<C-S-Space>", vim.lsp.buf.signature_help, { desc = "Parâmetros esperados" })
 
+      local function go_to_angular_file_reference()
+        if not vim.tbl_contains({ "typescript", "typescriptreact" }, vim.bo.filetype) then
+          return false
+        end
+
+        local line = vim.api.nvim_get_current_line()
+        local col = vim.api.nvim_win_get_cursor(0)[2] + 1
+        for _, pattern in ipairs({
+          "templateUrl%s*:%s*['\"]([^'\"]+)['\"]",
+          "styleUrl%s*:%s*['\"]([^'\"]+)['\"]",
+          "styleUrls%s*:%s*%[[^]]*['\"]([^'\"]+)['\"]",
+        }) do
+          local start_pos, end_pos, path = line:find(pattern)
+          if path and col >= start_pos and col <= end_pos then
+            local source = vim.api.nvim_buf_get_name(0)
+            local target = vim.fn.fnamemodify(source, ":h") .. "/" .. path
+            target = vim.fn.fnamemodify(target, ":p")
+            if vim.fn.filereadable(target) == 1 then
+              vim.cmd.edit(vim.fn.fnameescape(target))
+              return true
+            end
+          end
+        end
+        return false
+      end
+
       -- Função inteligente: Ir para implementação (ou definição/descompilação), abrindo Telescope se houver múltiplas
       local function go_to_implementation()
+        if go_to_angular_file_reference() then
+          return
+        end
+
         local has_omnisharp_ext, omni_ext = pcall(require, "omnisharp_extended")
         if has_omnisharp_ext and vim.bo.filetype == "cs" then
           -- Para C#, o omnisharp_extended usa Telescope para descompilação e definições/implementações
@@ -273,6 +304,7 @@ return {
         local ft = vim.bo.filetype
         local web_fts = {
           html = true,
+          htmlangular = true,
           typescript = true,
           javascript = true,
           typescriptreact = true,
@@ -295,7 +327,7 @@ return {
         if web_fts[ft] and prettier_bin ~= "" then
           local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
           local input_text = table.concat(lines, "\n")
-          local parser = (ft == "html") and "html" or ((ft == "css" or ft == "scss") and "css" or ((ft == "json") and "json" or "typescript"))
+          local parser = (ft == "html") and "html" or ((ft == "htmlangular") and "angular" or ((ft == "css" or ft == "scss") and "css" or ((ft == "json") and "json" or "typescript")))
 
           local obj = vim.system({ prettier_bin, "--parser", parser }, { stdin = input_text }):wait()
           if obj.code == 0 and obj.stdout and #obj.stdout > 0 then
@@ -349,6 +381,9 @@ return {
       pcall(function()
         require("luasnip.loaders.from_vscode").lazy_load()
       end)
+      -- Templates Angular usam o filetype htmlangular; reutiliza os snippets
+      -- de HTML e Angular para permitir expansões como div, ngFor e ngIf.
+      luasnip.filetype_extend("htmlangular", { "html", "angular" })
 
       cmp.setup({
         snippet = {
