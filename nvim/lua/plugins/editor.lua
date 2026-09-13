@@ -498,4 +498,21 @@ return {
       }
     end,
   },
+
+  -- Mini.Surround (Manipulação ultra-rápida de chavetas, parêntesis, aspas e tags)
+  {
+    "echasnovski/mini.surround",
+    version = false,
+    opts = {
+      mappings = {
+        add = "sa", -- Adicionar surround (ex: saiw" para rodear palavra com aspas)
+        delete = "sd", -- Apagar surround (ex: sd" para remover aspas)
+        find = "sf", -- Procurar surround à direita
+        find_left = "sF", -- Procurar surround à esquerda
+        highlight = "sh", -- Realçar surround
+        replace = "sr", -- Substituir surround (ex: sr"' substitui aspas duplas por simples)
+        update_n_lines = "sn",
+      },
+    },
+  },
 }

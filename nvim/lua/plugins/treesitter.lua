@@ -21,4 +21,17 @@ return {
       end
     end,
   },
+  {
+    "nvim-treesitter/nvim-treesitter-context",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    opts = {
+      enable = true,
+      max_lines = 3, -- No máximo 3 linhas fixas no topo para não roubar espaço
+      min_window_height = 0,
+      line_numbers = true,
+      multiline_threshold = 1,
+      trim_scope = "outer",
+      mode = "cursor",
+    },
+  },
 }
