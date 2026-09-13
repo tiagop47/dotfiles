@@ -20,11 +20,33 @@ return {
     },
     config = function()
       -- Configuração visual de Diagnósticos (erros com sublinhado ondulado como no VS Code)
-      -- Filtra avisos irritantes de estilo como "expression value is never used" (IDE0058)
+      -- Filtra avisos irritantes de estilo que poluem o ecrã (unused variables, unused expressions, IDE0058, IDE0059, etc.)
       local function filter_diagnostics(diagnostics)
         return vim.tbl_filter(function(d)
           local msg = d.message:lower()
-          if msg:find("expression value is never used") or (d.code and tostring(d.code) == "IDE0058") then
+          local code = tostring(d.code or "")
+          -- C# / Roslyn unused warnings
+          if msg:find("expression value is never used")
+             or msg:find("value assigned to.*never used")
+             or msg:find("is never used")
+             or msg:find("is assigned but its value is never used")
+             or msg:find("is never assigned")
+             or msg:find("unnecessary using directive")
+             or code == "IDE0058" -- expression value is never used
+             or code == "IDE0059" -- unnecessary assignment of a value
+             or code == "IDE0051" -- unused private member
+             or code == "IDE0052" -- unread private member
+             or code == "IDE0005" -- unnecessary using
+             or code == "CS8019"  -- unnecessary using directive
+             or code == "CS0168"  -- variable is declared but never used
+             or code == "CS0219"  -- variable is assigned but never used
+             -- WebDev (TypeScript / ESLint / Angular) unused warnings
+             or code == "6133"    -- TS: declared but value is never read
+             or code == "6196"    -- TS: unused type/import
+             or code == "6192"    -- TS: unused import
+             or msg:find("is declared but its value is never read")
+             or msg:find("is defined but never used")
+          then
             return false
           end
           return true
