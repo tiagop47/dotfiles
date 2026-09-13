@@ -495,6 +495,8 @@ return {
       vim.g.VM_silent_exit = 1
       vim.g.VM_quit_after_leaving_insert_mode = 0
       vim.g.VM_maps = {
+        ["Add Cursor Down"] = "<C-A-Down>",
+        ["Add Cursor Up"] = "<C-A-Up>",
         ["Find Under"] = "<A-d>",
         ["Find Subword Under"] = "<A-d>",
         ["Skip Region"] = "<A-D>",
