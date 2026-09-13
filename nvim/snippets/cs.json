@@ -1,0 +1,117 @@
+{
+  "Constructor (ctor)": {
+    "prefix": "ctor",
+    "body": [
+      "public ${TM_FILENAME_BASE}()",
+      "{",
+      "    $0",
+      "}"
+    ],
+    "description": "Constructor for the current class"
+  },
+  "Constructor with parameters (ctorp)": {
+    "prefix": "ctorp",
+    "body": [
+      "public ${TM_FILENAME_BASE}(${1:parameters})",
+      "{",
+      "    $0",
+      "}"
+    ],
+    "description": "Parameterized constructor"
+  },
+  "Auto-implemented Property (prop)": {
+    "prefix": "prop",
+    "body": [
+      "public ${1:int} ${2:Property} { get; set; }$0"
+    ],
+    "description": "Auto-implemented property"
+  },
+  "Init-only Property (propi - C# 9+)": {
+    "prefix": "propi",
+    "body": [
+      "public ${1:int} ${2:Property} { get; init; }$0"
+    ],
+    "description": "C# 9+ Init-only property"
+  },
+  "Required Property (propr - C# 11+)": {
+    "prefix": "propr",
+    "body": [
+      "public required ${1:string} ${2:Property} { get; set; }$0"
+    ],
+    "description": "C# 11+ Required property"
+  },
+  "Property with Backing Field and Expression Get (propf)": {
+    "prefix": "propf",
+    "body": [
+      "private ${1:decimal} _${2:campo};",
+      "public ${1:decimal} ${3:Propriedade}",
+      "{",
+      "    get => _${2:campo};",
+      "    set",
+      "    {",
+      "        $0",
+      "        _${2:campo} = value;",
+      "    }",
+      "}"
+    ],
+    "description": "Modern C# property with expression getter and validated setter"
+  },
+  "Record (record - C# 9+)": {
+    "prefix": "record",
+    "body": [
+      "public record ${1:Name}(${2:params});$0"
+    ],
+    "description": "C# 9+ Positional record"
+  },
+  "Record Class (recordclass)": {
+    "prefix": "recordclass",
+    "body": [
+      "public record class ${1:Name}",
+      "{",
+      "    $0",
+      "}"
+    ],
+    "description": "C# 10+ Record class"
+  },
+  "Record Struct (recordstruct)": {
+    "prefix": "recordstruct",
+    "body": [
+      "public readonly record struct ${1:Name}(${2:params});$0"
+    ],
+    "description": "C# 10+ Readonly record struct"
+  },
+  "Primary Constructor Class (classp - C# 12+)": {
+    "prefix": "classp",
+    "body": [
+      "public class ${1:Name}(${2:params})",
+      "{",
+      "    $0",
+      "}"
+    ],
+    "description": "C# 12+ Primary constructor class"
+  },
+  "Async Task Method (tasc)": {
+    "prefix": "tasc",
+    "body": [
+      "public async Task<${1:IActionResult}> ${2:MethodNameAsync}(${3:params})",
+      "{",
+      "    $0",
+      "}"
+    ],
+    "description": "Async Task method"
+  },
+  "Dependency Injection Controller (apicontroller)": {
+    "prefix": "apicontroller",
+    "body": [
+      "using Microsoft.AspNetCore.Mvc;",
+      "",
+      "[ApiController]",
+      "[Route(\"api/[controller]\")]",
+      "public class ${1:Name}Controller : ControllerBase",
+      "{",
+      "    $0",
+      "}"
+    ],
+    "description": "ASP.NET Core ApiController boilerplate"
+  }
+}
