@@ -62,7 +62,13 @@ end
 vim.keymap.set({ "n", "i", "v" }, "<A-w>", close_current_buffer, { desc = "Fechar buffer atual (nunca fecha o Neovim)" })
 vim.keymap.set({ "n", "i", "v" }, "<M-w>", close_current_buffer, { desc = "Fechar buffer atual (nunca fecha o Neovim)" })
 vim.api.nvim_create_user_command("Q", close_current_buffer, {})
-vim.cmd([[cnoreabbrev <expr> q (getcmdtype() == ':' && getcmdline() ==# 'q') ? 'Q' : 'q']])
+vim.api.nvim_create_user_command("Quit", close_current_buffer, {})
+vim.cmd([[
+  cnoreabbrev <expr> q (getcmdtype() == ':' && getcmdline() ==# 'q') ? 'Q' : 'q'
+  cnoreabbrev <expr> q! (getcmdtype() == ':' && getcmdline() ==# 'q!') ? 'Q' : 'q!'
+  cnoreabbrev <expr> quit (getcmdtype() == ':' && getcmdline() ==# 'quit') ? 'Quit' : 'quit'
+  cnoreabbrev <expr> quit! (getcmdtype() == ':' && getcmdline() ==# 'quit!') ? 'Quit' : 'quit!'
+]])
 
 -- Turbo Scroll com a tecla Alt (avança 15 linhas por clique da roda do rato)
 vim.keymap.set({ "n", "v", "i" }, "<A-ScrollWheelUp>", "15<C-y>", { desc = "Scroll rápido para cima" })

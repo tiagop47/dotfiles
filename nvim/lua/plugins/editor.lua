@@ -131,6 +131,8 @@ return {
           filtered_items = { visible = true, hide_dotfiles = false },
           window = {
             mappings = {
+              ["<C-n>"] = "add", -- Ctrl+n: Criar novo ficheiro (pede título + extensão) no diretório selecionado
+              ["a"] = "add",
               ["<Del>"] = "delete",
               ["<BS>"] = "navigate_up",
               ["u"] = "navigate_up",
