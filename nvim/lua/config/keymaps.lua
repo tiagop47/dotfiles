@@ -51,10 +51,8 @@ local function close_current_buffer()
   else
     -- Se for o ÚLTIMO ficheiro: NUNCA fecha o programa!
     -- Cria um novo buffer vazio e limpa o anterior sem fechar a janela
-    local new_buf = vim.api.nvim_create_buf(true, false)
-    vim.api.nvim_set_current_buf(new_buf)
+    vim.cmd("enew")
     pcall(vim.cmd, "bdelete! " .. current)
-    -- Mostra o Neo-tree ao lado se estiver fechado
     pcall(vim.cmd, "Neotree filesystem show left")
   end
 end
@@ -63,11 +61,35 @@ vim.keymap.set({ "n", "i", "v" }, "<A-w>", close_current_buffer, { desc = "Fecha
 vim.keymap.set({ "n", "i", "v" }, "<M-w>", close_current_buffer, { desc = "Fechar buffer atual (nunca fecha o Neovim)" })
 vim.api.nvim_create_user_command("Q", close_current_buffer, {})
 vim.api.nvim_create_user_command("Quit", close_current_buffer, {})
+vim.api.nvim_create_user_command("Wq", close_current_buffer, {})
+vim.api.nvim_create_user_command("X", close_current_buffer, {})
+-- Comandos explícitos para nunca fechar a última janela do Neovide.
+vim.api.nvim_create_user_command("q", close_current_buffer, { bang = true })
+vim.api.nvim_create_user_command("wq", close_current_buffer, { bang = true })
+vim.api.nvim_create_user_command("x", close_current_buffer, { bang = true })
+
+-- Interceta a execução dos comandos internos antes de o Neovim tentar
+-- fechar a última janela. Os aliases sozinhos podem ser ignorados em alguns
+-- contextos de tabs/janelas.
+vim.keymap.set("c", "<CR>", function()
+  if vim.fn.getcmdtype() == ":" then
+    local command = vim.fn.getcmdline():gsub("%s+$", "")
+    if command == "q" or command == "q!" or command == "wq" or command == "wq!" or command == "x" or command == "x!" then
+      vim.schedule(close_current_buffer)
+      return "<C-c>"
+    end
+  end
+  return "<CR>"
+end, { expr = true, desc = "Fechar apenas o buffer atual" })
 vim.cmd([[
   cnoreabbrev <expr> q (getcmdtype() == ':' && getcmdline() ==# 'q') ? 'Q' : 'q'
   cnoreabbrev <expr> q! (getcmdtype() == ':' && getcmdline() ==# 'q!') ? 'Q' : 'q!'
   cnoreabbrev <expr> quit (getcmdtype() == ':' && getcmdline() ==# 'quit') ? 'Quit' : 'quit'
   cnoreabbrev <expr> quit! (getcmdtype() == ':' && getcmdline() ==# 'quit!') ? 'Quit' : 'quit!'
+  cnoreabbrev <expr> wq (getcmdtype() == ':' && getcmdline() ==# 'wq') ? 'Wq' : 'wq'
+  cnoreabbrev <expr> wq! (getcmdtype() == ':' && getcmdline() ==# 'wq!') ? 'Wq' : 'wq!'
+  cnoreabbrev <expr> x (getcmdtype() == ':' && getcmdline() ==# 'x') ? 'X' : 'x'
+  cnoreabbrev <expr> x! (getcmdtype() == ':' && getcmdline() ==# 'x!') ? 'X' : 'x!'
 ]])
 
 -- Turbo Scroll com a tecla Alt (avança 15 linhas por clique da roda do rato)

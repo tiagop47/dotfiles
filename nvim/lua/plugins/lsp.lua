@@ -196,7 +196,7 @@ return {
 
         local clients = vim.lsp.get_clients({ bufnr = 0 })
         for _, client in ipairs(clients) do
-          if client.supports_method("textDocument/implementation") then
+          if client:supports_method("textDocument/implementation") then
             -- Telescope lsp_implementations mostra a lista no Telescope se houver mais de 1, ou salta direto se for 1 só!
             local has_telescope, tb = pcall(require, "telescope.builtin")
             if has_telescope then
@@ -251,7 +251,7 @@ return {
         local clients = vim.lsp.get_clients({ bufnr = 0 })
         local can_format = false
         for _, client in ipairs(clients) do
-          if client.supports_method("textDocument/formatting") then
+          if client:supports_method("textDocument/formatting") then
             can_format = true
             break
           end

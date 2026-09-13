@@ -506,19 +506,19 @@ return {
     end,
   },
 
-  -- Mini.Surround (Manipulação ultra-rápida de chavetas, parêntesis, aspas e tags)
+  -- Mini.Surround (Prefixado com 'gz' para deixar a tecla 's' e 'S' 100% livres e nativas do Vim!)
   {
     "echasnovski/mini.surround",
     version = false,
     opts = {
       mappings = {
-        add = "sa", -- Adicionar surround (ex: saiw" para rodear palavra com aspas)
-        delete = "sd", -- Apagar surround (ex: sd" para remover aspas)
-        find = "sf", -- Procurar surround à direita
-        find_left = "sF", -- Procurar surround à esquerda
-        highlight = "sh", -- Realçar surround
-        replace = "sr", -- Substituir surround (ex: sr"' substitui aspas duplas por simples)
-        update_n_lines = "sn",
+        add = "gza", -- Adicionar surround (ex: gzaiw" para rodear palavra com aspas)
+        delete = "gzd", -- Apagar surround (ex: gzd" para remover aspas)
+        find = "gzf", -- Procurar surround à direita
+        find_left = "gzF", -- Procurar surround à esquerda
+        highlight = "gzh", -- Realçar surround
+        replace = "gzr", -- Substituir surround (ex: gzr"' substitui aspas duplas por simples)
+        update_n_lines = "gzn",
       },
     },
   },
