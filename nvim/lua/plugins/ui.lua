@@ -19,4 +19,26 @@ return {
       color_icons = true,
     },
   },
+  -- Dressing.nvim: Transforma o Ctrl+. (Code Actions), Renomear e menus do Neovim em janelas flutuantes interativas
+  {
+    "stevearc/dressing.nvim",
+    event = "VeryLazy",
+    opts = {
+      input = {
+        enabled = true,
+        border = "rounded",
+      },
+      select = {
+        enabled = true,
+        backend = { "telescope", "builtin" },
+        telescope = {
+          layout_strategy = "cursor",
+          layout_config = {
+            width = 0.6,
+            height = 0.4,
+          },
+        },
+      },
+    },
+  },
 }
