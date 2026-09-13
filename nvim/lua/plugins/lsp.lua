@@ -47,13 +47,6 @@ return {
             "DotNet:enablePackageRestore=false",
             "--encoding", "utf-8",
             "--languageserver",
-            "FormattingOptions:EnableEditorConfigSupport=true",
-            "Sdk:IncludePrereleases=true",
-            "RoslynExtensionsOptions:EnableDecompilationSupport=true",
-            "RoslynExtensionsOptions:EnableAnalyzersSupport=true",
-            "RoslynExtensionsOptions:EnableImportCompletion=true",
-            "RoslynExtensionsOptions:DocumentAnalysisTimeoutMs=30000",
-            "MsBuild:LoadProjectsOnDemand=false",
           },
           settings = {
             FormattingOptions = {
@@ -72,7 +65,11 @@ return {
             RoslynExtensionsOptions = {
               EnableDecompilationSupport = true,
               EnableAnalyzersSupport = true,
-              EnableImportCompletion = true, -- Auto-import de usings ao escolher sugestão no autocomplete!
+              EnableImportCompletion = true,
+              DocumentAnalysisTimeoutMs = 30000,
+            },
+            MsBuild = {
+              LoadProjectsOnDemand = false,
             },
           },
         }
