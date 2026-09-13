@@ -179,8 +179,7 @@ return {
           end,
         },
       })
-      vim.keymap.set("n", "<Tab>", ":BufferLineCycleNext<CR>")
-      vim.keymap.set("n", "<S-Tab>", ":BufferLineCyclePrev<CR>")
+      -- Alternância de tabs estilo browser/VS Code (Ctrl+Tab / Ctrl+Shift+Tab)
       vim.keymap.set("n", "<C-Tab>", ":BufferLineCycleNext<CR>", { desc = "Próxima tab" })
       vim.keymap.set("n", "<C-S-Tab>", ":BufferLineCyclePrev<CR>", { desc = "Tab anterior" })
       for i = 1, 5 do

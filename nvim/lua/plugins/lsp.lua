@@ -241,7 +241,12 @@ return {
         local mouse = vim.fn.getmousepos()
         if mouse and mouse.winid > 0 then
           vim.api.nvim_set_current_win(mouse.winid)
-          vim.api.nvim_win_set_cursor(mouse.winid, { mouse.line, mouse.column - 1 })
+          local bufnr = vim.api.nvim_win_get_buf(mouse.winid)
+          local line_count = vim.api.nvim_buf_line_count(bufnr)
+          local line = math.max(1, math.min(mouse.line, line_count))
+          local line_text = vim.api.nvim_buf_get_lines(bufnr, line - 1, line, false)[1] or ""
+          local column = math.max(0, math.min(mouse.column - 1, #line_text))
+          vim.api.nvim_win_set_cursor(mouse.winid, { line, column })
         end
         go_to_implementation()
       end, { desc = "Ctrl+Clique: Ir para implementação (Telescope se múltiplas)" })
