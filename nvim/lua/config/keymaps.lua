@@ -4,9 +4,11 @@ vim.keymap.set("i", "<C-v>", "<C-r><C-o>+", { desc = "Colar sem autoindent" })
 vim.keymap.set("n", "<C-s>", ":write<CR>", { desc = "Guardar" })
 vim.keymap.set("i", "jk", "<Esc>", { desc = "Sair do modo insert" })
 
--- Undo & Redo (estilo VS Code / Windows)
+-- Undo & Redo (Ctrl+Z para desfazer, Ctrl+Shift+Z para refazer estilo VS Code)
 vim.keymap.set({ "n", "i", "v" }, "<C-z>", "<Cmd>undo<CR>", { desc = "Undo" })
-vim.keymap.set({ "n", "i", "v" }, "<C-y>", "<Cmd>redo<CR>", { desc = "Redo" })
+vim.keymap.set({ "n", "i", "v" }, "<C-S-z>", "<Cmd>redo<CR>", { desc = "Redo" })
+vim.keymap.set({ "n", "i", "v" }, "<C-S-Z>", "<Cmd>redo<CR>", { desc = "Redo" })
+-- <C-y> fica 100% NATIVO do Vim (Scroll da janela para cima, o inverso exato de <C-e>)
 
 -- Navegação no histórico (Jump list)
 vim.keymap.set("n", "<A-Left>", "<C-o>", { desc = "Voltar" })
