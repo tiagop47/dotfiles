@@ -80,8 +80,33 @@ return {
       })
 
       local caps = require("cmp_nvim_lsp").default_capabilities()
+      local function root_for(bufnr, markers)
+        return function(client_root, on_dir)
+          local root = vim.fs.root(client_root, markers)
+          if root then
+            on_dir(root)
+          end
+        end
+      end
+
+      vim.lsp.config.lua_ls = {
+        capabilities = caps,
+        root_dir = root_for(nil, { ".luarc.json", ".luarc.jsonc", ".git" }),
+      }
+      vim.lsp.config.pyright = {
+        capabilities = caps,
+        root_dir = root_for(nil, { "pyproject.toml", "setup.py", "requirements.txt", ".git" }),
+      }
+      vim.lsp.config.ts_ls = {
+        capabilities = caps,
+        root_dir = root_for(nil, { "tsconfig.json", "jsconfig.json", "package.json", ".git" }),
+      }
+      vim.lsp.config.angularls = {
+        capabilities = caps,
+        root_dir = root_for(nil, { "angular.json", "project.json", "package.json", ".git" }),
+      }
+
       for _, s in ipairs({ "lua_ls", "pyright", "ts_ls", "angularls" }) do
-        vim.lsp.config[s] = { capabilities = caps }
         vim.lsp.enable(s)
       end
 
@@ -90,6 +115,13 @@ return {
       if vim.fn.executable(omni) == 1 then
         vim.lsp.config["omnisharp"] = {
           capabilities = caps,
+          root_dir = root_for(nil, {
+            "global.json",
+            "*.sln",
+            "*.slnx",
+            "*.csproj",
+            ".git",
+          }),
           cmd = {
             omni,
             "-z",
