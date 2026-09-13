@@ -92,14 +92,17 @@ return {
 
       vim.lsp.config.lua_ls = {
         capabilities = caps,
+        cmd = { vim.fn.has("win32") == 1 and "lua-language-server.cmd" or "lua-language-server" },
         root_dir = root_for(nil, { ".luarc.json", ".luarc.jsonc", ".git" }),
       }
       vim.lsp.config.pyright = {
         capabilities = caps,
+        cmd = { vim.fn.has("win32") == 1 and "pyright-langserver.cmd" or "pyright-langserver", "--stdio" },
         root_dir = root_for(nil, { "pyproject.toml", "setup.py", "requirements.txt", ".git" }),
       }
       vim.lsp.config.ts_ls = {
         capabilities = caps,
+        cmd = { vim.fn.has("win32") == 1 and "typescript-language-server.cmd" or "typescript-language-server", "--stdio" },
         root_dir = root_for(nil, { "tsconfig.json", "jsconfig.json", "package.json", ".git" }),
       }
       vim.lsp.config.angularls = {
