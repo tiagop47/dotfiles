@@ -62,11 +62,7 @@ vim.keymap.set({ "n", "i", "v" }, "<M-w>", close_current_buffer, { desc = "Fecha
 vim.api.nvim_create_user_command("Q", close_current_buffer, {})
 vim.api.nvim_create_user_command("Quit", close_current_buffer, {})
 vim.api.nvim_create_user_command("Wq", close_current_buffer, {})
-vim.api.nvim_create_user_command("X", close_current_buffer, {})
--- Comandos explícitos para nunca fechar a última janela do Neovide.
-vim.api.nvim_create_user_command("q", close_current_buffer, { bang = true })
-vim.api.nvim_create_user_command("wq", close_current_buffer, { bang = true })
-vim.api.nvim_create_user_command("x", close_current_buffer, { bang = true })
+-- Comandos em maiúsculas e abreviações para fechar buffer sem fechar o Neovim
 
 -- Interceta a execução dos comandos internos antes de o Neovim tentar
 -- fechar a última janela. Os aliases sozinhos podem ser ignorados em alguns
