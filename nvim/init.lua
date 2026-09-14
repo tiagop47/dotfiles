@@ -7,14 +7,18 @@ if vim.loader then
   vim.loader.enable()
 end
 
--- Garante que binários do Mason e do NPM estão sempre no PATH interno do Neovim (Windows)
+-- Garante que binários do Mason, NPM e .NET tools estão sempre no PATH interno do Neovim (Windows)
 local mason_bin = vim.fn.stdpath("data") .. "/mason/bin"
 local npm_bin = vim.fn.expand("$APPDATA/npm")
+local dotnet_tools = vim.fn.expand("~/.dotnet/tools")
 if vim.fn.isdirectory(mason_bin) == 1 and not vim.env.PATH:find(mason_bin, 1, true) then
   vim.env.PATH = mason_bin .. ";" .. vim.env.PATH
 end
 if vim.fn.isdirectory(npm_bin) == 1 and not vim.env.PATH:find(npm_bin, 1, true) then
   vim.env.PATH = npm_bin .. ";" .. vim.env.PATH
+end
+if vim.fn.isdirectory(dotnet_tools) == 1 and not vim.env.PATH:find(dotnet_tools, 1, true) then
+  vim.env.PATH = dotnet_tools .. ";" .. vim.env.PATH
 end
 
 -- 1. Opções base, atalhos universais, autocmds e Neovide
@@ -22,6 +26,7 @@ require("config.options")
 require("config.keymaps")
 require("config.autocmds")
 require("config.neovide")
+require("config.window_tabs")
 
 -- 2. Gestor de Plugins (lazy.nvim)
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -39,9 +44,23 @@ vim.opt.rtp:prepend(lazypath)
 
 -- 3. Carrega automaticamente todos os ficheiros dentro de lua/plugins/
 require("lazy").setup("plugins", {
+  defaults = { lazy = false },
   rocks = { enabled = false },
-  install = { colorscheme = { "github_dark_default" } },
+  install = { colorscheme = { "tokyonight" } },
   checker = { enabled = false },
   change_detection = { notify = false },
+  performance = {
+    rtp = {
+      disabled_plugins = {
+        "gzip",
+        "matchit",
+        "matchparen",
+        "netrwPlugin",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+      },
+    },
+  },
 })
-

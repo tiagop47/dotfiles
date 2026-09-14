@@ -3,6 +3,8 @@ vim.keymap.set({ "n", "v" }, "<C-c>", '"+y', { desc = "Copiar" })
 vim.keymap.set("i", "<C-v>", "<C-r><C-o>+", { desc = "Colar sem autoindent" })
 vim.keymap.set("n", "<C-s>", ":write<CR>", { desc = "Guardar" })
 vim.keymap.set("i", "jk", "<Esc>", { desc = "Sair do modo insert" })
+vim.keymap.set("i", "<C-BS>", "<C-W>", { desc = "Apagar palavra anterior" })
+vim.keymap.set("i", "<C-H>", "<C-W>", { desc = "Apagar palavra anterior" })
 
 -- Undo & Redo (Ctrl+Z para desfazer, Ctrl+Shift+Z para refazer estilo VS Code)
 vim.keymap.set({ "n", "i", "v" }, "<C-z>", "<Cmd>undo<CR>", { desc = "Undo" })
@@ -31,7 +33,6 @@ local function close_current_buffer()
 
   -- Se for janela de ferramentas (Neo-tree, ToggleTerm, etc.), apenas fecha essa janela sem tocar no resto
   if ft == "neo-tree" or bt == "terminal" or ft == "trouble" or ft == "qf" or ft == "help" then
-    pcall(vim.cmd, "close")
     return
   end
 
@@ -46,27 +47,27 @@ local function close_current_buffer()
   end, vim.api.nvim_list_bufs())
 
   if #listed > 1 then
-    -- Se houver outros ficheiros abertos, fecha o buffer atual com segurança
-    pcall(vim.cmd, "bdelete! " .. current)
+    pcall(vim.api.nvim_buf_delete, current, { force = true })
   else
-    -- Se for o ÚLTIMO ficheiro: NUNCA fecha o programa!
-    -- Cria um novo buffer vazio e limpa o anterior sem fechar a janela
-    vim.cmd("enew")
-    pcall(vim.cmd, "bdelete! " .. current)
-    pcall(vim.cmd, "Neotree filesystem show left")
+    -- Nunca executar :q no último buffer: reutilizar a janela atual sem
+    -- criar um segundo [No Name] visível no arranque/ao fechar o último ficheiro.
+    vim.bo[current].modified = false
+    vim.bo[current].buftype = "nofile"
+    vim.bo[current].bufhidden = "wipe"
+    vim.bo[current].swapfile = false
+    vim.bo[current].filetype = ""
+    vim.api.nvim_buf_set_name(current, "")
   end
 end
 
-vim.keymap.set({ "n", "i", "v" }, "<A-w>", close_current_buffer, { desc = "Fechar buffer atual (nunca fecha o Neovim)" })
-vim.keymap.set({ "n", "i", "v" }, "<M-w>", close_current_buffer, { desc = "Fechar buffer atual (nunca fecha o Neovim)" })
+vim.keymap.set({ "n", "i", "v" }, "<A-w>", close_current_buffer, { desc = "Fechar buffer atual" })
+vim.keymap.set({ "n", "i", "v" }, "<M-w>", close_current_buffer, { desc = "Fechar buffer atual" })
+vim.keymap.set({ "n", "i", "v" }, "<C-A-w>", close_current_buffer, { desc = "Fechar buffer atual (nunca fecha o Neovide)" })
+vim.keymap.set({ "n", "i", "v" }, "<C-M-w>", close_current_buffer, { desc = "Fechar buffer atual (nunca fecha o Neovide)" })
 vim.api.nvim_create_user_command("Q", close_current_buffer, {})
 vim.api.nvim_create_user_command("Quit", close_current_buffer, {})
 vim.api.nvim_create_user_command("Wq", close_current_buffer, {})
--- Comandos em maiúsculas e abreviações para fechar buffer sem fechar o Neovim
 
--- Interceta a execução dos comandos internos antes de o Neovim tentar
--- fechar a última janela. Os aliases sozinhos podem ser ignorados em alguns
--- contextos de tabs/janelas.
 vim.keymap.set("c", "<CR>", function()
   if vim.fn.getcmdtype() == ":" then
     local command = vim.fn.getcmdline():gsub("%s+$", "")
@@ -84,8 +85,8 @@ vim.cmd([[
   cnoreabbrev <expr> quit! (getcmdtype() == ':' && getcmdline() ==# 'quit!') ? 'Quit' : 'quit!'
   cnoreabbrev <expr> wq (getcmdtype() == ':' && getcmdline() ==# 'wq') ? 'Wq' : 'wq'
   cnoreabbrev <expr> wq! (getcmdtype() == ':' && getcmdline() ==# 'wq!') ? 'Wq' : 'wq!'
-  cnoreabbrev <expr> x (getcmdtype() == ':' && getcmdline() ==# 'x') ? 'X' : 'x'
-  cnoreabbrev <expr> x! (getcmdtype() == ':' && getcmdline() ==# 'x!') ? 'X' : 'x!'
+  cnoreabbrev <expr> x (getcmdtype() == ':' && getcmdline() ==# 'x') ? 'Wq' : 'x'
+  cnoreabbrev <expr> x! (getcmdtype() == ':' && getcmdline() ==# 'x!') ? 'Wq' : 'x!'
 ]])
 
 -- Turbo Scroll com a tecla Alt (avança 15 linhas por clique da roda do rato)

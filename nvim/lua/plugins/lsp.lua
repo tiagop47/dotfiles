@@ -12,12 +12,56 @@ return {
       ensure_installed = { "lua_ls", "pyright", "ts_ls", "angularls" },
     },
   },
+  -- Roslyn LSP Moderno (seblj/roslyn.nvim) - Oficial da Microsoft (igual ao C# Dev Kit do VS Code)
+  {
+    "seblj/roslyn.nvim",
+    ft = { "cs", "razor" },
+    opts = {
+      config = {
+        cmd = { "roslyn-language-server.cmd" },
+        settings = {
+          ["csharp|symbol_search"] = {
+            dotnet_search_reference_assemblies = true,
+          },
+          ["csharp|completion"] = {
+            dotnet_show_completion_items_from_unimported_namespaces = true,
+            dotnet_provide_regex_completions = true,
+            dotnet_show_name_completion_suggestions = true,
+          },
+          ["csharp|inlay_hints"] = {
+            csharp_enable_inlay_hints_for_implicit_object_creation = true,
+            csharp_enable_inlay_hints_for_implicit_variable_types = true,
+            csharp_enable_inlay_hints_for_lambda_parameter_types = true,
+            csharp_enable_inlay_hints_for_types = true,
+            dotnet_enable_inlay_hints_for_indexer_parameters = true,
+            dotnet_enable_inlay_hints_for_literal_parameters = true,
+            dotnet_enable_inlay_hints_for_object_creation_parameters = true,
+            dotnet_enable_inlay_hints_for_other_parameters = true,
+            dotnet_enable_inlay_hints_for_parameters = true,
+            dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix = true,
+            dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = true,
+            dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = true,
+          },
+          ["csharp|code_lens"] = {
+            dotnet_enable_references_code_lens = true,
+            dotnet_enable_tests_code_lens = true,
+          },
+          ["csharp|formatting"] = {
+            dotnet_organize_imports_on_format = true,
+          },
+          ["csharp|background_analysis"] = {
+            dotnet_analyzer_diagnostics_scope = "fullSolution",
+            dotnet_compiler_diagnostics_scope = "fullSolution",
+          },
+        },
+      },
+    },
+  },
   {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
       "hrsh7th/cmp-nvim-lsp",
-      "Hoffs/omnisharp-extended-lsp.nvim",
     },
     config = function()
       -- Configuração visual de Diagnósticos (erros com sublinhado ondulado como no VS Code)
@@ -60,25 +104,6 @@ return {
       vim.diagnostic.set = function(namespace, bufnr, diagnostics, opts)
         orig_set(namespace, bufnr, filter_diagnostics(diagnostics), opts)
       end
-
-      vim.diagnostic.config({
-        -- No VS Code, o texto ao lado da linha SÓ aparece para ERROS REAIS que partem a compilação!
-        virtual_text = {
-          prefix = "●",
-          spacing = 2,
-          severity = { min = vim.diagnostic.severity.ERROR },
-        },
-        -- Sublinhado apenas para Avisos e Erros (ignora sugestões de estilo/hints)
-        underline = {
-          severity = { min = vim.diagnostic.severity.WARN },
-        },
-        signs = {
-          severity = { min = vim.diagnostic.severity.WARN },
-        },
-        update_in_insert = false, -- No VS Code só valida quando pausas a digitação, não enquanto estás a meio de uma palavra!
-        severity_sort = true,
-        float = { border = "rounded", source = "always" },
-      })
 
       local caps = require("cmp_nvim_lsp").default_capabilities()
       local function root_for(bufnr, markers)
@@ -142,63 +167,16 @@ return {
         pattern = { "typescript", "html", "htmlangular" },
         callback = function() pcall(vim.lsp.enable, "angularls") end,
       })
-
-      -- Configuração dedicada OmniSharp para C# no Windows com descompilador ativado
-      local omni = vim.fn.stdpath("data") .. "/mason/packages/omnisharp/libexec/OmniSharp.exe"
-      if vim.fn.executable(omni) == 1 then
-        vim.lsp.config["omnisharp"] = {
-          capabilities = caps,
-          flags = {
-            debounce_text_changes = 100,
-          },
-          root_dir = root_for(nil, {
-            "global.json",
-            "*.sln",
-            "*.slnx",
-            "*.csproj",
-            ".git",
-          }),
-          cmd = {
-            omni,
-            "-z",
-            "--hostPID", tostring(vim.fn.getpid()),
-            "DotNet:enablePackageRestore=false",
-            "--encoding", "utf-8",
-            "--languageserver",
-          },
-          settings = {
-            FormattingOptions = {
-              EnableEditorConfigSupport = true,
-              OrganizeImports = true,
-              NewLinesForBracesInTypes = true,
-              NewLinesForBracesInMethods = true,
-              NewLinesForBracesInProperties = true,
-              NewLinesForBracesInAccessors = true,
-              NewLinesForBracesInAnonymousMethods = true,
-              NewLinesForBracesInControlBlocks = true,
-              NewLinesForBracesInAnonymousTypes = true,
-              NewLinesForBracesInObjectCollectionArrayInitializers = true,
-              NewLinesForBracesInLambdaExpressionBody = true,
-            },
-            RoslynExtensionsOptions = {
-              EnableDecompilationSupport = true,
-              EnableAnalyzersSupport = true,
-              EnableImportCompletion = true,
-              DocumentAnalysisTimeoutMs = 30000,
-              AnalyzeOpenDocumentsOnly = true, -- OTIMIZAÇÃO: Compila e analisa só ficheiros abertos (boot 10x mais rápido!)
-            },
-            MsBuild = {
-              LoadProjectsOnDemand = true,
-            },
-          },
-        }
-
-        -- Ativa OmniSharp apenas quando abres ficheiros C# (.cs)
-        vim.api.nvim_create_autocmd("FileType", {
-          pattern = { "cs" },
-          callback = function() pcall(vim.lsp.enable, "omnisharp") end,
-        })
-      end
+      -- Ativa automaticamente Inlay Hints (nomes de parâmetros e tipos em tempo real no código)
+      vim.api.nvim_create_autocmd("LspAttach", {
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client and client:supports_method("textDocument/inlayHint") then
+            local is_roslyn = client.name == "roslyn" or client.name == "roslyn_ls"
+            vim.lsp.inlay_hint.enable(not is_roslyn, { bufnr = args.buf })
+          end
+        end,
+      })
 
       -- Keymaps universais de LSP
       vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, { desc = "Renomear símbolo em todo o projeto (F2 Refactor)" })
@@ -232,59 +210,45 @@ return {
         return false
       end
 
-      -- Função inteligente: Ir para implementação (ou definição/descompilação), abrindo Telescope se houver múltiplas
-      local function go_to_implementation()
+      -- Organize Imports automático (<leader>co)
+      vim.keymap.set("n", "<leader>co", function()
+        vim.lsp.buf.code_action({
+          apply = true,
+          context = {
+            only = { "source.organizeImports" },
+            diagnostics = {},
+          },
+        })
+      end, { desc = "Organizar usings / imports automaticamente" })
+
+      -- F12: Ir para Definição (LSP Definition / Angular Template)
+      local function go_to_definition()
         if go_to_angular_file_reference() then
           return
         end
 
-        local has_omnisharp_ext, omni_ext = pcall(require, "omnisharp_extended")
-        if has_omnisharp_ext and vim.bo.filetype == "cs" then
-          -- Para C#, o omnisharp_extended usa Telescope para descompilação e definições/implementações
-          omni_ext.telescope_lsp_definitions()
-          return
-        end
-
-        local clients = vim.lsp.get_clients({ bufnr = 0 })
-        for _, client in ipairs(clients) do
-          if client:supports_method("textDocument/implementation") then
-            -- Telescope lsp_implementations mostra a lista no Telescope se houver mais de 1, ou salta direto se for 1 só!
-            local has_telescope, tb = pcall(require, "telescope.builtin")
-            if has_telescope then
-              tb.lsp_implementations()
-            else
-              vim.lsp.buf.implementation()
-            end
-            return
-          end
-        end
-
         local has_telescope, tb = pcall(require, "telescope.builtin")
-        if has_telescope then
+        if has_telescope and tb.lsp_definitions then
           tb.lsp_definitions()
         else
           vim.lsp.buf.definition()
         end
       end
 
-      -- Ctrl + F12: Mostrar todas as implementações da interface no Telescope
+      -- Ctrl + F12: Mostrar todas as Implementações listadas no Telescope
       local function show_all_implementations()
-        local has_omnisharp_ext, omni_ext = pcall(require, "omnisharp_extended")
-        if has_omnisharp_ext and vim.bo.filetype == "cs" then
-          omni_ext.telescope_lsp_implementation()
-          return
-        end
-
         local has_telescope, tb = pcall(require, "telescope.builtin")
-        if has_telescope then
+        if has_telescope and tb.lsp_implementations then
           tb.lsp_implementations()
         else
           vim.lsp.buf.implementation()
         end
       end
 
-      vim.keymap.set("n", "<C-F12>", show_all_implementations, { desc = "Mostrar todas as implementações da interface (Telescope)" })
-      vim.keymap.set("n", "<F12>", go_to_implementation, { desc = "Ir para implementação/definição (com descompilação .NET)" })
+      vim.keymap.set({ "n", "i", "v" }, "<F12>", go_to_definition, { desc = "Ir para Definição (F12 estilo VS Code)" })
+      vim.keymap.set({ "n", "i", "v" }, "<C-F12>", show_all_implementations, { desc = "Listar todas as implementações (Ctrl+F12 estilo VS Code)" })
+      vim.keymap.set("n", "gd", go_to_definition, { desc = "Ir para Definição" })
+      vim.keymap.set("n", "gi", show_all_implementations, { desc = "Listar Implementações" })
 
       -- Ctrl + Clique esquerdo: Ir para implementação (abre Telescope se houver múltiplas)
       vim.keymap.set("n", "<C-LeftMouse>", function()

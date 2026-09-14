@@ -23,6 +23,7 @@ o.showcmdloc = "statusline"
 o.undofile = true
 o.swapfile = false -- Desativa ficheiros .swp (evita avisos W325; undofile e auto-save tratam da segurança)
 o.cursorline = true
+o.showtabline = 2 -- Garante que a barra de tabs no topo está SEMPRE visível como no VS Code
 o.report = 99999 -- Não mostra notificações/mensagens de "1 line less", "1 line deleted", etc.
 o.shortmess:append("sI") -- Silencia mensagens desnecessárias do intro e escrita
 
@@ -35,6 +36,26 @@ if vim.fn.executable("powershell.exe") == 1 then
   vim.opt.shellcmdflag = "-NoLogo -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;"
   vim.opt.shellredir = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
   vim.opt.shellpipe = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
-  vim.opt.shellquote = ""
-  vim.opt.shellxquote = ""
 end
+
+-- Configuração global de diagnósticos (inline virtual text, sublinhado e ícones)
+vim.diagnostic.config({
+  virtual_text = {
+    severity = nil,
+    source = "if_many",
+    prefix = "●",
+    spacing = 4,
+  },
+  signs = {
+    text = {
+      [vim.diagnostic.severity.ERROR] = "✘",
+      [vim.diagnostic.severity.WARN] = "▲",
+      [vim.diagnostic.severity.HINT] = "⚑",
+      [vim.diagnostic.severity.INFO] = "»",
+    },
+  },
+  underline = true,
+  update_in_insert = false,
+  severity_sort = true,
+  float = { border = "rounded", source = "always" },
+})

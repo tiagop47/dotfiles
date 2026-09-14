@@ -156,29 +156,56 @@ return {
     end,
   },
 
-  -- Bufferline (Separadores de topo)
+  -- Bufferline & Scope (Tabs com escopo por Tabpage estilo VS Code)
+  {
+    "tiagovla/scope.nvim",
+    config = true,
+  },
   {
     "akinsho/bufferline.nvim",
-    version = "*",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    enabled = false,
+    dependencies = { "nvim-tree/nvim-web-devicons", "tiagovla/scope.nvim" },
     config = function()
+      local scope_core = require("scope.core")
+
       require("bufferline").setup({
         options = {
+          mode = "buffers",
+          always_show_bufferline = true,
           diagnostics = "nvim_lsp",
           show_close_icon = false,
-          show_buffer_close_icons = false,
+          show_buffer_close_icons = true,
           separator_style = "thin",
           tab_size = 18,
-          max_name_length = 18,
+          max_name_length = 25,
           min_name_length = 0,
-          padding = 0,
-          custom_filter = function(buf_number)
-            local name = vim.fn.bufname(buf_number)
-            if name == "" and not vim.bo[buf_number].modified then return false end
-            return true
+          padding = 1,
+          -- A lista mostrada no topo é sempre a da tabpage ativa.
+          custom_filter = function(bufnr)
+            scope_core.revalidate()
+            local current_tab = vim.api.nvim_get_current_tabpage()
+            for _, scoped_bufnr in ipairs(scope_core.cache[current_tab] or {}) do
+              if scoped_bufnr == bufnr then
+                return true
+              end
+            end
+            return false
           end,
         },
       })
+
+      -- Atualiza imediatamente a barra quando se troca/cria/fecha uma tabpage.
+      local tabline_group = vim.api.nvim_create_augroup("BufferlineTabpageScope", { clear = true })
+      vim.api.nvim_create_autocmd({ "TabEnter", "TabNewEntered", "TabClosed", "BufEnter", "BufDelete" }, {
+        group = tabline_group,
+        callback = function()
+          vim.schedule(function()
+            pcall(scope_core.revalidate)
+            vim.cmd("redrawtabline")
+          end)
+        end,
+      })
+
       -- Alternância de tabs estilo browser/VS Code (Ctrl+Tab / Ctrl+Shift+Tab)
       vim.keymap.set("n", "<C-Tab>", ":BufferLineCycleNext<CR>", { desc = "Próxima tab" })
       vim.keymap.set("n", "<C-S-Tab>", ":BufferLineCyclePrev<CR>", { desc = "Tab anterior" })
@@ -188,19 +215,61 @@ return {
         end, { desc = "Ir para tab " .. i })
       end
       vim.keymap.set("n", "<leader>x", ":bdelete<CR>", { desc = "Fechar buffer" })
+
+      -- Ctrl + F3: "Close Others" no escopo da tabpage ativa (estilo VS Code)
+      -- Fecha todos os buffers desta tabpage exceto o buffer ativo, sem quebrar o layout das janelas
+      vim.keymap.set("n", "<C-F3>", function()
+        local current_buf = vim.api.nvim_get_current_buf()
+        local scope_ok, scope = pcall(require, "scope.core")
+        local bufs_to_close = {}
+
+        if scope_ok and scope then
+          -- scope.nvim guarda os buffers por handle da tabpage. A API
+          -- get_buffers não existe nesta versão; usar o cache oficial depois
+          -- de o sincronizar evita cair no fallback global.
+          scope.revalidate()
+          local tab = vim.api.nvim_get_current_tabpage()
+          local tab_bufs = scope.cache[tab] or {}
+          for _, b in ipairs(tab_bufs) do
+            if b ~= current_buf and vim.api.nvim_buf_is_valid(b) then
+              table.insert(bufs_to_close, b)
+            end
+          end
+        else
+          -- Fallback: todos os buffers listados exceto o atual
+          for _, b in ipairs(vim.api.nvim_list_bufs()) do
+            if b ~= current_buf and vim.api.nvim_buf_is_valid(b) and vim.bo[b].buflisted then
+              table.insert(bufs_to_close, b)
+            end
+          end
+        end
+
+        for _, b in ipairs(bufs_to_close) do
+          -- Se tiver alterações não gravadas, guarda silenciosamente
+          if vim.bo[b].modified and vim.bo[b].buftype == "" and vim.api.nvim_buf_get_name(b) ~= "" then
+            pcall(function()
+              vim.api.nvim_buf_call(b, function() vim.cmd("silent! write") end)
+            end)
+          end
+          pcall(vim.api.nvim_buf_delete, b, { force = false })
+        end
+
+        vim.cmd("redrawtabline")
+      end, { desc = "Fechar todas as outras tabs na tabpage atual (Ctrl+F3 Close Others)" })
     end,
   },
 
   -- Lualine (Barra de estado inferior)
   {
     "nvim-lualine/lualine.nvim",
+    event = "VeryLazy",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       local function lsp_status()
         local clients = vim.lsp.get_clients({ bufnr = 0 })
-        if #clients == 0 then return "LSP: —" end
+        if #clients == 0 then return "" end
         local names = vim.tbl_map(function(client) return client.name end, clients)
-        return "LSP: " .. table.concat(names, ", ")
+        return " " .. table.concat(names, ", ")
       end
       require("lualine").setup({
         options = {
@@ -212,9 +281,21 @@ return {
             command = { a = { fg = "#0d1117", bg = "#79c0ff", gui = "bold" }, b = { fg = "#f0f6fc", bg = "#30363d" }, c = { fg = "#f0f6fc", bg = "#161b22" } },
             inactive = { a = { fg = "#8b949e", bg = "#161b22" }, b = { fg = "#8b949e", bg = "#161b22" }, c = { fg = "#8b949e", bg = "#161b22" } },
           },
+          globalstatus = true,       -- Uma única statusline em vez de uma por split
+          component_separators = "", -- Sem separadores internos
+          section_separators = "",   -- Sem setas/curvas entre secções
         },
         sections = {
-          lualine_x = { lsp_status, "encoding", "fileformat", "filetype" },
+          lualine_a = { { "mode", fmt = function(s) return s:sub(1,1) end } }, -- Só a primeira letra: N I V C
+          lualine_b = { { "branch", icon = "" } },
+          lualine_c = { { "filename", path = 1, symbols = { modified = " ●", readonly = " ", unnamed = "[Sem Nome]" } } },
+          lualine_x = { { "diagnostics", sources = { "nvim_lsp" }, symbols = { error = " ", warn = " ", info = " " } }, lsp_status },
+          lualine_y = {},
+          lualine_z = { "location" },
+        },
+        inactive_sections = {
+          lualine_c = { { "filename", path = 1 } },
+          lualine_x = {},
         },
       })
       vim.o.showcmd = true
@@ -483,7 +564,18 @@ return {
 
   -- Ferramentas de edição (Comentários, Autopairs, Which-Key)
   { "numToStr/Comment.nvim", config = true },
-  { "windwp/nvim-autopairs", config = true },
+  {
+    "windwp/nvim-autopairs",
+    event = "InsertEnter",
+    config = function()
+      local npairs = require("nvim-autopairs")
+      npairs.setup({
+        check_ts = true,
+        map_cr = true,
+        map_bs = true,
+      })
+    end,
+  },
   { "folke/which-key.nvim", config = true },
 
   -- Multi-Cursor (vim-visual-multi) configurado estilo VS Code
@@ -502,7 +594,7 @@ return {
         ["Find Subword Under"] = "<A-d>",
         ["Skip Region"] = "<A-D>",
         ["Remove Region"] = "<A-q>",
-        ["Select All"] = "<C-A-l>",
+        ["Select All"] = "<C-S-l>",
         ["Undo"] = "u",
         ["Redo"] = "<C-r>",
       }
