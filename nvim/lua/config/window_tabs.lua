@@ -2,6 +2,22 @@
 -- A tabline nativa é global; a winbar é renderizada independentemente em cada split.
 local M = {}
 
+local function setup_highlights()
+  vim.api.nvim_set_hl(0, "WindowTabActive", {
+    fg = "#0d1117",
+    bg = "#79c0ff",
+    bold = true,
+  })
+  vim.api.nvim_set_hl(0, "WindowTabInactive", {
+    fg = "#c9d1d9",
+    bg = "#30363d",
+  })
+  vim.api.nvim_set_hl(0, "WindowTabSeparator", {
+    fg = "#484f58",
+    bg = "#161b22",
+  })
+end
+
 local function valid_buffer(bufnr)
   return vim.api.nvim_buf_is_valid(bufnr)
     and vim.bo[bufnr].buflisted
@@ -34,11 +50,11 @@ function M.render(win)
   local parts = {}
   for _, bufnr in ipairs(tabs) do
     if valid_buffer(bufnr) then
-      local hl = bufnr == current and "%#TabLineSel#" or "%#TabLine#"
+      local hl = bufnr == current and "%#WindowTabActive#" or "%#WindowTabInactive#"
       parts[#parts + 1] = string.format("%%%d@v:lua.WindowTabsPick@ %s ", bufnr, hl .. display_name(bufnr) .. "%*")
     end
   end
-  return table.concat(parts, "│")
+  return table.concat(parts, "%#WindowTabSeparator#│%*")
 end
 
 function M.pick(bufnr, minwid, clicks, button, mods)
@@ -84,6 +100,11 @@ function M.cycle(delta)
   local bufnr = tabs[next_index]
   if valid_buffer(bufnr) then vim.api.nvim_win_set_buf(win, bufnr) end
 end
+
+setup_highlights()
+vim.api.nvim_create_autocmd("ColorScheme", {
+  callback = setup_highlights,
+})
 
 _G.WindowTabsPick = M.pick
 vim.opt.showtabline = 0
