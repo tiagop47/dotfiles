@@ -171,6 +171,22 @@ return {
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
+          -- Reaplica por buffer para garantir que plugins/LSPs que alterem a
+          -- configuração global não desligam o texto inline deste buffer.
+          vim.diagnostic.config({
+            virtual_text = {
+              severity = nil,
+              source = "if_many",
+              prefix = "●",
+              spacing = 4,
+            },
+            signs = true,
+            underline = true,
+            update_in_insert = true,
+            severity_sort = true,
+            float = { border = "rounded", source = "always" },
+          }, args.buf)
+          vim.diagnostic.enable(true, args.buf)
           if client and client:supports_method("textDocument/inlayHint") then
             local is_roslyn = client.name == "roslyn" or client.name == "roslyn_ls"
             vim.lsp.inlay_hint.enable(not is_roslyn, { bufnr = args.buf })
@@ -324,7 +340,7 @@ return {
           vim.lsp.buf.format({
             async = false,
             filter = function(client)
-              return ft ~= "cs" or client.name == "omnisharp"
+              return ft ~= "cs" or client.name == "roslyn" or client.name == "roslyn_ls"
             end,
           })
           local line_count = vim.api.nvim_buf_line_count(0)
