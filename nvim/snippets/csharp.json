@@ -1,0 +1,12 @@
+{
+  "C# XML documentation": {
+    "prefix": "///",
+    "body": [
+      "/// <summary>",
+      "/// ${1:Descrição}",
+      "/// </summary>",
+      "${0}"
+    ],
+    "description": "Template de comentário XML para C#"
+  }
+}
