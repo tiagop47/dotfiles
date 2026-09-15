@@ -1,11 +1,9 @@
 {
   "$help": "https://aka.ms/terminal-documentation",
   "$schema": "https://aka.ms/terminal-profiles-schema",
-  "actions":
-  [
+  "actions": [
     {
-      "command":
-      {
+      "command": {
         "action": "closeTab"
       },
       "id": "User.closeTab.0"
@@ -17,8 +15,7 @@
   "defaultProfile": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
   "initialCols": 125,
   "initialRows": 37,
-  "keybindings":
-  [
+  "keybindings": [
     {
       "id": "Terminal.OpenNewTab",
       "keys": "ctrl+t"
@@ -40,32 +37,28 @@
       "keys": "alt+w"
     }
   ],
-  "newTabMenu":
-  [
+  "newTabMenu": [
     {
       "type": "remainingProfiles"
     }
   ],
-  "profiles":
-  {
-    "defaults":
-    {
+  "profiles": {
+    "defaults": {
       "colorScheme": "Catppuccin Mocha",
       "cursorColor": "#89B4FA",
       "cursorShape": "filledBox",
-      "font": 
-      {
+      "font": {
         "face": "CaskaydiaCove Nerd Font",
-        "size": 11.5,
-        "weight": "normal"
+        "size": 11.0,
+        "weight": "semi-light"
       },
-      "opacity": 97,
-      "padding": "4, 2, 4, 2",
+      "textAntialiasingMode": "cleartype",
+      "opacity": 100,
+      "padding": "8, 6, 8, 6",
       "scrollbarState": "hidden",
       "useAcrylic": false
     },
-    "list":
-    [
+    "list": [
       {
         "background": null,
         "cursorColor": "#ED713B",
@@ -138,8 +131,7 @@
       }
     ]
   },
-  "schemes":
-  [
+  "schemes": [
     {
       "background": "#1E1E2E",
       "black": "#45475A",
@@ -168,17 +160,14 @@
   "showTabsInTitlebar": false,
   "tabWidthMode": "titleLength",
   "theme": "TokyoNightTheme",
-  "themes":
-  [
+  "themes": [
     {
       "name": "TokyoNightTheme",
-      "tabRow":
-      {
+      "tabRow": {
         "background": "#11111BFF",
         "unfocusedBackground": "#11111BFF"
       },
-      "window":
-      {
+      "window": {
         "applicationTheme": "dark",
         "experimental.rainbowFrame": false,
         "frame": "#11111BFF",
