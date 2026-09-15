@@ -156,108 +156,7 @@ return {
     end,
   },
 
-  -- Bufferline & Scope (Tabs com escopo por Tabpage estilo VS Code)
-  {
-    "tiagovla/scope.nvim",
-    config = true,
-  },
-  {
-    "akinsho/bufferline.nvim",
-    enabled = false,
-    dependencies = { "nvim-tree/nvim-web-devicons", "tiagovla/scope.nvim" },
-    config = function()
-      local scope_core = require("scope.core")
 
-      require("bufferline").setup({
-        options = {
-          mode = "buffers",
-          always_show_bufferline = true,
-          diagnostics = "nvim_lsp",
-          show_close_icon = false,
-          show_buffer_close_icons = true,
-          separator_style = "thin",
-          tab_size = 18,
-          max_name_length = 25,
-          min_name_length = 0,
-          padding = 1,
-          -- A lista mostrada no topo é sempre a da tabpage ativa.
-          custom_filter = function(bufnr)
-            scope_core.revalidate()
-            local current_tab = vim.api.nvim_get_current_tabpage()
-            for _, scoped_bufnr in ipairs(scope_core.cache[current_tab] or {}) do
-              if scoped_bufnr == bufnr then
-                return true
-              end
-            end
-            return false
-          end,
-        },
-      })
-
-      -- Atualiza imediatamente a barra quando se troca/cria/fecha uma tabpage.
-      local tabline_group = vim.api.nvim_create_augroup("BufferlineTabpageScope", { clear = true })
-      vim.api.nvim_create_autocmd({ "TabEnter", "TabNewEntered", "TabClosed", "BufEnter", "BufDelete" }, {
-        group = tabline_group,
-        callback = function()
-          vim.schedule(function()
-            pcall(scope_core.revalidate)
-            vim.cmd("redrawtabline")
-          end)
-        end,
-      })
-
-      -- Alternância de tabs estilo browser/VS Code (Ctrl+Tab / Ctrl+Shift+Tab)
-      vim.keymap.set("n", "<C-Tab>", ":BufferLineCycleNext<CR>", { desc = "Próxima tab" })
-      vim.keymap.set("n", "<C-S-Tab>", ":BufferLineCyclePrev<CR>", { desc = "Tab anterior" })
-      for i = 1, 5 do
-        vim.keymap.set("n", "<A-" .. i .. ">", function()
-          vim.cmd("BufferLineGoToBuffer " .. i)
-        end, { desc = "Ir para tab " .. i })
-      end
-      vim.keymap.set("n", "<leader>x", ":bdelete<CR>", { desc = "Fechar buffer" })
-
-      -- Ctrl + F3: "Close Others" no escopo da tabpage ativa (estilo VS Code)
-      -- Fecha todos os buffers desta tabpage exceto o buffer ativo, sem quebrar o layout das janelas
-      vim.keymap.set("n", "<C-F3>", function()
-        local current_buf = vim.api.nvim_get_current_buf()
-        local scope_ok, scope = pcall(require, "scope.core")
-        local bufs_to_close = {}
-
-        if scope_ok and scope then
-          -- scope.nvim guarda os buffers por handle da tabpage. A API
-          -- get_buffers não existe nesta versão; usar o cache oficial depois
-          -- de o sincronizar evita cair no fallback global.
-          scope.revalidate()
-          local tab = vim.api.nvim_get_current_tabpage()
-          local tab_bufs = scope.cache[tab] or {}
-          for _, b in ipairs(tab_bufs) do
-            if b ~= current_buf and vim.api.nvim_buf_is_valid(b) then
-              table.insert(bufs_to_close, b)
-            end
-          end
-        else
-          -- Fallback: todos os buffers listados exceto o atual
-          for _, b in ipairs(vim.api.nvim_list_bufs()) do
-            if b ~= current_buf and vim.api.nvim_buf_is_valid(b) and vim.bo[b].buflisted then
-              table.insert(bufs_to_close, b)
-            end
-          end
-        end
-
-        for _, b in ipairs(bufs_to_close) do
-          -- Se tiver alterações não gravadas, guarda silenciosamente
-          if vim.bo[b].modified and vim.bo[b].buftype == "" and vim.api.nvim_buf_get_name(b) ~= "" then
-            pcall(function()
-              vim.api.nvim_buf_call(b, function() vim.cmd("silent! write") end)
-            end)
-          end
-          pcall(vim.api.nvim_buf_delete, b, { force = false })
-        end
-
-        vim.cmd("redrawtabline")
-      end, { desc = "Fechar todas as outras tabs na tabpage atual (Ctrl+F3 Close Others)" })
-    end,
-  },
 
   -- Lualine (Barra de estado inferior)
   {
@@ -311,7 +210,7 @@ return {
       local toggleterm = require("toggleterm")
       toggleterm.setup({
         size = 18,
-        open_mapping = nil,
+        open_mapping = [[<c-\>]],
         direction = "horizontal",
         persist_size = true,
         start_in_insert = true,
@@ -323,7 +222,7 @@ return {
             return string.format("  Term %d ", term.id)
           end,
         },
-        shell = "powershell.exe -NoLogo",
+        shell = vim.o.shell,
       })
 
       local function toggle_main()
@@ -400,6 +299,7 @@ return {
       for _, key in ipairs({ "<C-`>", "<C-'>", "<C-~>", "<C-ç>", "<C-;>" }) do
         vim.keymap.set({ "n", "i", "t" }, key, toggle_main, { desc = "Toggle terminal inferior (abre/fecha)" })
       end
+      vim.keymap.set({ "n", "i", "t" }, "<C-\\>", toggle_main, { desc = "Toggle terminal PowerShell" })
       for _, key in ipairs({ "<C-S-`>", "<C-S-'>", "<C-S-ç>", "<C-S-;>", "<C-:>", "<C-Ç>" }) do
         vim.keymap.set({ "n", "i", "t" }, key, new_terminal, { desc = "Novo terminal inferior" })
       end
@@ -478,7 +378,13 @@ return {
     "rcarriga/nvim-notify",
     config = function()
       local notify = require("notify")
-      notify.setup({ background_colour = "#1e1e1e" })
+      notify.setup({
+        background_colour = "#1e1e1e",
+        timeout = 1200,
+        max_width = 60,
+        max_height = 3,
+        top_down = true,
+      })
       vim.notify = notify
     end,
   },

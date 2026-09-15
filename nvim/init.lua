@@ -46,7 +46,7 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup("plugins", {
   defaults = { lazy = false },
   rocks = { enabled = false },
-  install = { colorscheme = { "tokyonight" } },
+  install = { colorscheme = { "catppuccin" } },
   checker = { enabled = false },
   change_detection = { notify = false },
   performance = {

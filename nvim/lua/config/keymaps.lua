@@ -25,7 +25,7 @@ vim.keymap.set("n", "<leader>gc", "<Cmd>DiffviewClose<CR>", { desc = "Fechar com
 vim.keymap.set("n", "<leader>gh", "<Cmd>DiffviewFileHistory %<CR>", { desc = "Histórico de commits do ficheiro atual" })
 vim.keymap.set("n", "<leader>gl", "<Cmd>DiffviewFileHistory<CR>", { desc = "Histórico de commits do projeto (log)" })
 
--- Fecho seguro de buffers com Auto-Save (NUNCA fecha o Neovim/janela)
+-- Fecho seguro de abas por split com Auto-Save (estilo Editor Groups do VS Code)
 local function close_current_buffer()
   local current = vim.api.nvim_get_current_buf()
   local ft = vim.bo[current].filetype
@@ -33,6 +33,7 @@ local function close_current_buffer()
 
   -- Se for janela de ferramentas (Neo-tree, ToggleTerm, etc.), apenas fecha essa janela sem tocar no resto
   if ft == "neo-tree" or bt == "terminal" or ft == "trouble" or ft == "qf" or ft == "help" then
+    pcall(vim.cmd, "close")
     return
   end
 
@@ -41,29 +42,19 @@ local function close_current_buffer()
     pcall(vim.cmd, "silent write")
   end
 
-  -- Lista apenas buffers de utilizador válidos
-  local listed = vim.tbl_filter(function(b)
-    return vim.api.nvim_buf_is_valid(b) and vim.bo[b].buflisted and vim.bo[b].buftype == ""
-  end, vim.api.nvim_list_bufs())
-
-  if #listed > 1 then
-    pcall(vim.api.nvim_buf_delete, current, { force = true })
+  local ok, wt = pcall(require, "config.window_tabs")
+  if ok and wt.close_current_tab then
+    wt.close_current_tab()
   else
-    -- Nunca executar :q no último buffer: reutilizar a janela atual sem
-    -- criar um segundo [No Name] visível no arranque/ao fechar o último ficheiro.
-    vim.bo[current].modified = false
-    vim.bo[current].buftype = "nofile"
-    vim.bo[current].bufhidden = "wipe"
-    vim.bo[current].swapfile = false
-    vim.bo[current].filetype = ""
-    vim.api.nvim_buf_set_name(current, "")
+    pcall(vim.api.nvim_buf_delete, current, { force = false })
   end
 end
 
-vim.keymap.set({ "n", "i", "v" }, "<A-w>", close_current_buffer, { desc = "Fechar buffer atual" })
-vim.keymap.set({ "n", "i", "v" }, "<M-w>", close_current_buffer, { desc = "Fechar buffer atual" })
-vim.keymap.set({ "n", "i", "v" }, "<C-A-w>", close_current_buffer, { desc = "Fechar buffer atual (nunca fecha o Neovide)" })
-vim.keymap.set({ "n", "i", "v" }, "<C-M-w>", close_current_buffer, { desc = "Fechar buffer atual (nunca fecha o Neovide)" })
+vim.keymap.set({ "n", "i", "v" }, "<A-w>", close_current_buffer, { desc = "Fechar aba atual do split" })
+vim.keymap.set({ "n", "i", "v" }, "<M-w>", close_current_buffer, { desc = "Fechar aba atual do split" })
+vim.keymap.set({ "n", "i", "v" }, "<C-A-w>", close_current_buffer, { desc = "Fechar aba atual do split" })
+vim.keymap.set({ "n", "i", "v" }, "<C-M-w>", close_current_buffer, { desc = "Fechar aba atual do split" })
+vim.keymap.set("n", "<leader>x", close_current_buffer, { desc = "Fechar aba atual do split" })
 vim.api.nvim_create_user_command("Q", close_current_buffer, {})
 vim.api.nvim_create_user_command("Quit", close_current_buffer, {})
 vim.api.nvim_create_user_command("Wq", close_current_buffer, {})

@@ -1,191 +1,191 @@
 {
-    "$help": "https://aka.ms/terminal-documentation",
-    "$schema": "https://aka.ms/terminal-profiles-schema",
-    "actions":
-    [
-        {
-            "command":
-            {
-                "action": "closeTab"
-            },
-            "id": "User.closeTab.0"
-        }
-    ],
-    "alwaysShowTabs": false,
-    "copyFormatting": "none",
-    "copyOnSelect": true,
-    "defaultProfile": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
-    "initialCols": 125,
-    "initialRows": 37,
-    "keybindings":
-    [
-        {
-            "id": "Terminal.OpenNewTab",
-            "keys": "ctrl+t"
-        },
-        {
-            "id": "Terminal.DuplicatePaneDown",
-            "keys": "alt+h"
-        },
-        {
-            "id": "Terminal.DuplicatePaneRight",
-            "keys": "alt+v"
-        },
-        {
-            "id": "Terminal.DuplicatePaneAuto",
-            "keys": "alt+shift+d"
-        },
-        {
-            "id": "User.closeTab.0",
-            "keys": "alt+w"
-        }
-    ],
-    "newTabMenu":
-    [
-        {
-            "type": "remainingProfiles"
-        }
-    ],
-    "profiles":
+  "$help": "https://aka.ms/terminal-documentation",
+  "$schema": "https://aka.ms/terminal-profiles-schema",
+  "actions":
+  [
     {
-        "defaults":
-        {
-            "colorScheme": "Catppuccin Mocha",
-            "cursorColor": "#89B4FA",
-            "cursorShape": "filledBox",
-            "font":
-            {
-                "face": "JetBrainsMono Nerd Font",
-                "size": 12,
-                "weight": "medium"
-            },
-            "opacity": 97,
-            "padding": "4, 2, 4, 2",
-            "scrollbarState": "hidden",
-            "useAcrylic": false
-        },
-        "list":
-        [
-            {
-                "background": null,
-                "cursorColor": "#ED713B",
-                "guid": "{51855cb2-8cce-5362-8f54-464b92b32386}",
-                "hidden": false,
-                "name": "Ubuntu",
-                "opacity": 100,
-                "source": "CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc"
-            },
-            {
-                "cursorColor": "#E37031",
-                "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
-                "hidden": false,
-                "name": "Windows PowerShell",
-                "opacity": 100,
-                "startingDirectory": "C:\\projects"
-            },
-            {
-                "guid": "{1f131d40-cf22-5833-963f-76bb69c3f535}",
-                "hidden": true,
-                "name": "Developer Command Prompt for VS 18",
-                "source": "Windows.Terminal.VisualStudio"
-            },
-            {
-                "guid": "{77ef97b1-4048-5b5d-ac04-30a3800bfeb7}",
-                "hidden": true,
-                "name": "Developer PowerShell for VS 18",
-                "source": "Windows.Terminal.VisualStudio"
-            },
-            {
-                "guid": "{16208362-94fc-5b1f-a491-5b2624d5ab56}",
-                "hidden": true,
-                "name": "Visual Studio Debug Console",
-                "source": "VSDebugConsole"
-            },
-            {
-                "guid": "{bbfa50d7-442b-566a-80f8-2116d8c84202}",
-                "hidden": true,
-                "name": "docker-desktop-data",
-                "source": "Microsoft.WSL"
-            },
-            {
-                "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
-                "hidden": false,
-                "name": "Command Prompt"
-            },
-            {
-                "guid": "{ce36aa9a-1e74-5fdf-9902-7e759681a029}",
-                "hidden": false,
-                "name": "Developer Command Prompt for VS 18",
-                "source": "Windows.Terminal.VisualStudio"
-            },
-            {
-                "guid": "{08ec0a2a-cbcc-571e-b457-583e5f0926da}",
-                "hidden": false,
-                "name": "Developer PowerShell for VS 18",
-                "source": "Windows.Terminal.VisualStudio"
-            },
-            {
-                "guid": "{04e84a9b-d3a8-5196-a5c5-600f3ee67815}",
-                "hidden": false,
-                "name": "Developer Command Prompt for VS 18 (2)",
-                "source": "Windows.Terminal.VisualStudio"
-            },
-            {
-                "guid": "{8eb38f7b-f201-588c-a07e-c4697d4dfd52}",
-                "hidden": false,
-                "name": "Developer PowerShell for VS 18 (2)",
-                "source": "Windows.Terminal.VisualStudio"
-            }
-        ]
+      "command":
+      {
+        "action": "closeTab"
+      },
+      "id": "User.closeTab.0"
+    }
+  ],
+  "alwaysShowTabs": false,
+  "copyFormatting": "none",
+  "copyOnSelect": true,
+  "defaultProfile": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+  "initialCols": 125,
+  "initialRows": 37,
+  "keybindings":
+  [
+    {
+      "id": "Terminal.OpenNewTab",
+      "keys": "ctrl+t"
     },
-    "schemes":
+    {
+      "id": "Terminal.DuplicatePaneDown",
+      "keys": "alt+h"
+    },
+    {
+      "id": "Terminal.DuplicatePaneRight",
+      "keys": "alt+v"
+    },
+    {
+      "id": "Terminal.DuplicatePaneAuto",
+      "keys": "alt+shift+d"
+    },
+    {
+      "id": "User.closeTab.0",
+      "keys": "alt+w"
+    }
+  ],
+  "newTabMenu":
+  [
+    {
+      "type": "remainingProfiles"
+    }
+  ],
+  "profiles":
+  {
+    "defaults":
+    {
+      "colorScheme": "Catppuccin Mocha",
+      "cursorColor": "#89B4FA",
+      "cursorShape": "filledBox",
+      "font": 
+      {
+        "face": "CaskaydiaCove Nerd Font",
+        "size": 11.5,
+        "weight": "normal"
+      },
+      "opacity": 97,
+      "padding": "4, 2, 4, 2",
+      "scrollbarState": "hidden",
+      "useAcrylic": false
+    },
+    "list":
     [
-        {
-            "background": "#1E1E2E",
-            "black": "#45475A",
-            "blue": "#89B4FA",
-            "brightBlack": "#585B70",
-            "brightBlue": "#89B4FA",
-            "brightCyan": "#94E2D5",
-            "brightGreen": "#A6E3A1",
-            "brightPurple": "#CBA6F7",
-            "brightRed": "#F38BA8",
-            "brightWhite": "#A6D0F4",
-            "brightYellow": "#F9E2AF",
-            "cursorColor": "#F5E0DC",
-            "cyan": "#94E2D5",
-            "foreground": "#CDD6F4",
-            "green": "#A6E3A1",
-            "name": "Catppuccin Mocha",
-            "purple": "#CBA6F7",
-            "red": "#F38BA8",
-            "selectionBackground": "#313244",
-            "white": "#BAC2DE",
-            "yellow": "#F9E2AF"
-        }
-    ],
-    "showTabsFullscreen": true,
-    "showTabsInTitlebar": false,
-    "tabWidthMode": "titleLength",
-    "theme": "TokyoNightTheme",
-    "themes":
-    [
-        {
-            "name": "TokyoNightTheme",
-            "tabRow":
-            {
-                "background": "#11111BFF",
-                "unfocusedBackground": "#11111BFF"
-            },
-            "window":
-            {
-                "applicationTheme": "dark",
-                "experimental.rainbowFrame": false,
-                "frame": "#11111BFF",
-                "unfocusedFrame": "#11111BFF",
-                "useMica": true
-            }
-        }
-    ],
-    "useAcrylicInTabRow": false
+      {
+        "background": null,
+        "cursorColor": "#ED713B",
+        "guid": "{51855cb2-8cce-5362-8f54-464b92b32386}",
+        "hidden": false,
+        "name": "Ubuntu",
+        "opacity": 100,
+        "source": "CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc"
+      },
+      {
+        "cursorColor": "#E37031",
+        "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+        "hidden": false,
+        "name": "Windows PowerShell",
+        "opacity": 100,
+        "startingDirectory": "C:\\projects"
+      },
+      {
+        "guid": "{1f131d40-cf22-5833-963f-76bb69c3f535}",
+        "hidden": true,
+        "name": "Developer Command Prompt for VS 18",
+        "source": "Windows.Terminal.VisualStudio"
+      },
+      {
+        "guid": "{77ef97b1-4048-5b5d-ac04-30a3800bfeb7}",
+        "hidden": true,
+        "name": "Developer PowerShell for VS 18",
+        "source": "Windows.Terminal.VisualStudio"
+      },
+      {
+        "guid": "{16208362-94fc-5b1f-a491-5b2624d5ab56}",
+        "hidden": true,
+        "name": "Visual Studio Debug Console",
+        "source": "VSDebugConsole"
+      },
+      {
+        "guid": "{bbfa50d7-442b-566a-80f8-2116d8c84202}",
+        "hidden": true,
+        "name": "docker-desktop-data",
+        "source": "Microsoft.WSL"
+      },
+      {
+        "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+        "hidden": false,
+        "name": "Command Prompt"
+      },
+      {
+        "guid": "{ce36aa9a-1e74-5fdf-9902-7e759681a029}",
+        "hidden": false,
+        "name": "Developer Command Prompt for VS 18",
+        "source": "Windows.Terminal.VisualStudio"
+      },
+      {
+        "guid": "{08ec0a2a-cbcc-571e-b457-583e5f0926da}",
+        "hidden": false,
+        "name": "Developer PowerShell for VS 18",
+        "source": "Windows.Terminal.VisualStudio"
+      },
+      {
+        "guid": "{04e84a9b-d3a8-5196-a5c5-600f3ee67815}",
+        "hidden": false,
+        "name": "Developer Command Prompt for VS 18 (2)",
+        "source": "Windows.Terminal.VisualStudio"
+      },
+      {
+        "guid": "{8eb38f7b-f201-588c-a07e-c4697d4dfd52}",
+        "hidden": false,
+        "name": "Developer PowerShell for VS 18 (2)",
+        "source": "Windows.Terminal.VisualStudio"
+      }
+    ]
+  },
+  "schemes":
+  [
+    {
+      "background": "#1E1E2E",
+      "black": "#45475A",
+      "blue": "#89B4FA",
+      "brightBlack": "#585B70",
+      "brightBlue": "#89B4FA",
+      "brightCyan": "#94E2D5",
+      "brightGreen": "#A6E3A1",
+      "brightPurple": "#CBA6F7",
+      "brightRed": "#F38BA8",
+      "brightWhite": "#A6D0F4",
+      "brightYellow": "#F9E2AF",
+      "cursorColor": "#F5E0DC",
+      "cyan": "#94E2D5",
+      "foreground": "#CDD6F4",
+      "green": "#A6E3A1",
+      "name": "Catppuccin Mocha",
+      "purple": "#CBA6F7",
+      "red": "#F38BA8",
+      "selectionBackground": "#313244",
+      "white": "#BAC2DE",
+      "yellow": "#F9E2AF"
+    }
+  ],
+  "showTabsFullscreen": true,
+  "showTabsInTitlebar": false,
+  "tabWidthMode": "titleLength",
+  "theme": "TokyoNightTheme",
+  "themes":
+  [
+    {
+      "name": "TokyoNightTheme",
+      "tabRow":
+      {
+        "background": "#11111BFF",
+        "unfocusedBackground": "#11111BFF"
+      },
+      "window":
+      {
+        "applicationTheme": "dark",
+        "experimental.rainbowFrame": false,
+        "frame": "#11111BFF",
+        "unfocusedFrame": "#11111BFF",
+        "useMica": true
+      }
+    }
+  ],
+  "useAcrylicInTabRow": false
 }

@@ -15,46 +15,11 @@ return {
   -- Roslyn LSP Moderno (seblj/roslyn.nvim) - Oficial da Microsoft (igual ao C# Dev Kit do VS Code)
   {
     "seblj/roslyn.nvim",
-    ft = { "cs", "razor" },
+    ft = { "cs", "razor", "cshtml" },
     opts = {
-      config = {
-        cmd = { "roslyn-language-server.cmd" },
-        settings = {
-          ["csharp|symbol_search"] = {
-            dotnet_search_reference_assemblies = true,
-          },
-          ["csharp|completion"] = {
-            dotnet_show_completion_items_from_unimported_namespaces = true,
-            dotnet_provide_regex_completions = true,
-            dotnet_show_name_completion_suggestions = true,
-          },
-          ["csharp|inlay_hints"] = {
-            csharp_enable_inlay_hints_for_implicit_object_creation = true,
-            csharp_enable_inlay_hints_for_implicit_variable_types = true,
-            csharp_enable_inlay_hints_for_lambda_parameter_types = true,
-            csharp_enable_inlay_hints_for_types = true,
-            dotnet_enable_inlay_hints_for_indexer_parameters = true,
-            dotnet_enable_inlay_hints_for_literal_parameters = true,
-            dotnet_enable_inlay_hints_for_object_creation_parameters = true,
-            dotnet_enable_inlay_hints_for_other_parameters = true,
-            dotnet_enable_inlay_hints_for_parameters = true,
-            dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix = true,
-            dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = true,
-            dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = true,
-          },
-          ["csharp|code_lens"] = {
-            dotnet_enable_references_code_lens = true,
-            dotnet_enable_tests_code_lens = true,
-          },
-          ["csharp|formatting"] = {
-            dotnet_organize_imports_on_format = true,
-          },
-          ["csharp|background_analysis"] = {
-            dotnet_analyzer_diagnostics_scope = "fullSolution",
-            dotnet_compiler_diagnostics_scope = "fullSolution",
-          },
-        },
-      },
+      filewatching = "auto",
+      broad_search = true, -- Encontra automaticamente soluções (.sln / .slnf) em pastas pai (essencial para ASP.NET Core)
+      lock_target = false,
     },
   },
   {
@@ -67,8 +32,9 @@ return {
       -- Configuração visual de Diagnósticos (erros com sublinhado ondulado como no VS Code)
       -- Filtra avisos irritantes de estilo que poluem o ecrã (unused variables, unused expressions, IDE0058, IDE0059, etc.)
       local function filter_diagnostics(diagnostics)
+        if not diagnostics then return {} end
         return vim.tbl_filter(function(d)
-          local msg = d.message:lower()
+          local msg = (d.message or ""):lower()
           local code = tostring(d.code or "")
           -- C# / Roslyn unused warnings
           if msg:find("expression value is never used")
@@ -114,6 +80,54 @@ return {
           end
         end
       end
+
+      -- Reconhecimento de ficheiros ASP.NET Core (.cshtml e .razor)
+      vim.filetype.add({
+        extension = {
+          cshtml = "razor",
+          razor = "razor",
+        },
+      })
+
+      -- Microsoft Roslyn LSP (C# e ASP.NET Core) configurado com capacidades completas de autocompletion e inlay hints
+      vim.lsp.config.roslyn = {
+        capabilities = caps,
+        settings = {
+          ["csharp|symbol_search"] = {
+            dotnet_search_reference_assemblies = true,
+          },
+          ["csharp|completion"] = {
+            dotnet_show_completion_items_from_unimported_namespaces = true,
+            dotnet_provide_regex_completions = true,
+            dotnet_show_name_completion_suggestions = true,
+          },
+          ["csharp|inlay_hints"] = {
+            csharp_enable_inlay_hints_for_implicit_object_creation = true,
+            csharp_enable_inlay_hints_for_implicit_variable_types = true,
+            csharp_enable_inlay_hints_for_lambda_parameter_types = true,
+            csharp_enable_inlay_hints_for_types = true,
+            dotnet_enable_inlay_hints_for_indexer_parameters = true,
+            dotnet_enable_inlay_hints_for_literal_parameters = true,
+            dotnet_enable_inlay_hints_for_object_creation_parameters = true,
+            dotnet_enable_inlay_hints_for_other_parameters = true,
+            dotnet_enable_inlay_hints_for_parameters = true,
+            dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix = false,
+            dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = false,
+            dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = false,
+          },
+          ["csharp|code_lens"] = {
+            dotnet_enable_references_code_lens = true,
+            dotnet_enable_tests_code_lens = true,
+          },
+          ["csharp|formatting"] = {
+            dotnet_organize_imports_on_format = true,
+          },
+          ["csharp|background_analysis"] = {
+            dotnet_analyzer_diagnostics_scope = "fullSolution",
+            dotnet_compiler_diagnostics_scope = "fullSolution",
+          },
+        },
+      }
 
       vim.lsp.config.lua_ls = {
         capabilities = caps,
@@ -167,29 +181,32 @@ return {
         pattern = { "typescript", "html", "htmlangular" },
         callback = function() pcall(vim.lsp.enable, "angularls") end,
       })
-      -- Ativa automaticamente Inlay Hints (nomes de parâmetros e tipos em tempo real no código)
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "cs", "razor", "cshtml" },
+        callback = function() pcall(vim.lsp.enable, "roslyn") end,
+      })
+      -- Ativa automaticamente Inlay Hints e Signature Help ao anexar o LSP
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
-          -- Reaplica por buffer para garantir que plugins/LSPs que alterem a
-          -- configuração global não desligam o texto inline deste buffer.
-          vim.diagnostic.config({
-            virtual_text = {
-              severity = nil,
-              source = "if_many",
-              prefix = "●",
-              spacing = 4,
-            },
-            signs = true,
-            underline = true,
-            update_in_insert = true,
-            severity_sort = true,
-            float = { border = "rounded", source = "always" },
-          }, args.buf)
-          vim.diagnostic.enable(true, args.buf)
+          pcall(vim.diagnostic.enable, true, { bufnr = args.buf })
           if client and client:supports_method("textDocument/inlayHint") then
-            local is_roslyn = client.name == "roslyn" or client.name == "roslyn_ls"
-            vim.lsp.inlay_hint.enable(not is_roslyn, { bufnr = args.buf })
+            pcall(vim.lsp.inlay_hint.enable, true, { bufnr = args.buf })
+          end
+
+          -- Tooltip flutuante automático dos argumentos ao abrir '(' ou vírgula ',' (estilo VS Code)
+          if client and client:supports_method("textDocument/signatureHelp") then
+            vim.api.nvim_create_autocmd("TextChangedI", {
+              buffer = args.buf,
+              callback = function()
+                local line = vim.api.nvim_get_current_line()
+                local col = vim.api.nvim_win_get_cursor(0)[2]
+                local char = line:sub(col, col)
+                if char == "(" or char == "," then
+                  pcall(vim.lsp.buf.signature_help, { focusable = false, silent = true })
+                end
+              end,
+            })
           end
         end,
       })
@@ -279,7 +296,7 @@ return {
           local column = math.max(0, math.min(mouse.column - 1, #line_text))
           vim.api.nvim_win_set_cursor(mouse.winid, { line, column })
         end
-        go_to_implementation()
+        show_all_implementations()
       end, { desc = "Ctrl+Clique: Ir para implementação (Telescope se múltiplas)" })
 
       -- Alt+Shift+F: Formatar ficheiro (Prettier para HTML/Web/Angular, LSP para C#/Python/Lua)
@@ -376,9 +393,14 @@ return {
         require("luasnip.loaders.from_vscode").lazy_load()
         require("luasnip.loaders.from_vscode").lazy_load({ paths = { vim.fn.stdpath("config") .. "/snippets" } })
       end)
-      -- Templates Angular usam o filetype htmlangular; reutiliza os snippets
-      -- de HTML e Angular para permitir expansões como @for, @if, div, etc.
+      -- Associa snippets entre linguagens irmãs
       luasnip.filetype_extend("htmlangular", { "html", "angular" })
+      luasnip.filetype_extend("typescript", { "javascript" })
+      luasnip.filetype_extend("typescriptreact", { "typescript", "javascript", "html" })
+      luasnip.filetype_extend("javascriptreact", { "javascript", "html" })
+      luasnip.filetype_extend("scss", { "css" })
+      luasnip.filetype_extend("razor", { "cs", "html" })
+      luasnip.filetype_extend("cshtml", { "cs", "html", "razor" })
 
       cmp.setup({
         snippet = {
@@ -457,6 +479,20 @@ return {
             })[entry.source.name]
             return vim_item
           end,
+        },
+        sorting = {
+          priority_weight = 2,
+          comparators = {
+            cmp.config.compare.offset,
+            cmp.config.compare.exact,
+            cmp.config.compare.locality, -- Prioriza variáveis e parâmetros locais (ex: 'artigo' dentro do método)
+            cmp.config.compare.recently_used,
+            cmp.config.compare.score,
+            cmp.config.compare.kind, -- Prioriza campos, propriedades e variáveis à frente de classes e exceções globais
+            cmp.config.compare.sort_text,
+            cmp.config.compare.length,
+            cmp.config.compare.order,
+          },
         },
         sources = cmp.config.sources({
           { name = "nvim_lsp", priority = 1000 },

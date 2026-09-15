@@ -1,0 +1,49 @@
+{
+  "CSS Flexbox Center": {
+    "prefix": ["flexcenter", "flexc"],
+    "body": [
+      "display: flex;",
+      "justify-content: center;",
+      "align-items: center;$0"
+    ],
+    "description": "Center child elements with Flexbox"
+  },
+  "CSS Flexbox Column": {
+    "prefix": ["flexcol", "flexcolumn"],
+    "body": [
+      "display: flex;",
+      "flex-direction: column;",
+      "gap: ${1:1rem};$0"
+    ],
+    "description": "Flexbox column layout with gap"
+  },
+  "CSS Grid Auto Fit": {
+    "prefix": ["gridcards", "autofit"],
+    "body": [
+      "display: grid;",
+      "grid-template-columns: repeat(auto-fit, minmax(${1:250px}, 1fr));",
+      "gap: ${2:1.5rem};$0"
+    ],
+    "description": "Responsive CSS Grid card layout"
+  },
+  "CSS Media Query": {
+    "prefix": ["media", "mq"],
+    "body": [
+      "@media (max-width: ${1:768px}) {",
+      "  $0",
+      "}"
+    ],
+    "description": "Responsive media query"
+  },
+  "CSS Reset Box-Sizing": {
+    "prefix": ["boxsizing", "reset"],
+    "body": [
+      "*, *::before, *::after {",
+      "  box-sizing: border-box;",
+      "  margin: 0;",
+      "  padding: 0;",
+      "}$0"
+    ],
+    "description": "Universal CSS box-sizing reset"
+  }
+}

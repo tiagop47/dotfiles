@@ -40,7 +40,19 @@
     ],
     "description": "C# 11+ Required property"
   },
-  "Property with Backing Field and Expression Get (propf)": {
+  "Full Property with Backing Field (propfull)": {
+    "prefix": "propfull",
+    "body": [
+      "private ${1:int} _${2:myVar};",
+      "public ${1:int} ${3:MyProperty}",
+      "{",
+      "    get { return _${2:myVar}; }",
+      "    set { _${2:myVar} = value; }",
+      "}$0"
+    ],
+    "description": "Property with backing field"
+  },
+  "Property with Backing Field and Expression (propf)": {
     "prefix": "propf",
     "body": [
       "private ${1:decimal} _${2:campo};",
@@ -90,6 +102,30 @@
     ],
     "description": "C# 12+ Primary constructor class"
   },
+  "Interface (interface)": {
+    "prefix": "interface",
+    "body": [
+      "public interface I${1:Name}",
+      "{",
+      "    $0",
+      "}"
+    ],
+    "description": "Interface definition"
+  },
+  "Dependency Injection Service Interface and Class (diservice)": {
+    "prefix": "diservice",
+    "body": [
+      "public interface I${1:Name}Service",
+      "{",
+      "    $0",
+      "}",
+      "",
+      "public class ${1:Name}Service : I${1:Name}Service",
+      "{",
+      "}"
+    ],
+    "description": "Service with Interface pair"
+  },
   "Async Task Method (tasc)": {
     "prefix": "tasc",
     "body": [
@@ -113,5 +149,121 @@
       "}"
     ],
     "description": "ASP.NET Core ApiController boilerplate"
+  },
+  "HttpGet Endpoint (httpget)": {
+    "prefix": "httpget",
+    "body": [
+      "[HttpGet(\"${1:route}\")]",
+      "[ProducesResponseType(StatusCodes.Status200OK)]",
+      "public async Task<IActionResult> ${2:GetAsync}(${3:params})",
+      "{",
+      "    $0",
+      "    return Ok();",
+      "}"
+    ],
+    "description": "ASP.NET Core HttpGet Endpoint"
+  },
+  "HttpPost Endpoint (httppost)": {
+    "prefix": "httppost",
+    "body": [
+      "[HttpPost]",
+      "[ProducesResponseType(StatusCodes.Status201Created)]",
+      "[ProducesResponseType(StatusCodes.Status400BadRequest)]",
+      "public async Task<IActionResult> ${1:CreateAsync}([FromBody] ${2:Dto} dto)",
+      "{",
+      "    $0",
+      "    return CreatedAtAction(nameof(${3:GetByIdAsync}), new { id = 1 }, null);",
+      "}"
+    ],
+    "description": "ASP.NET Core HttpPost Endpoint"
+  },
+  "HttpPut Endpoint (httpput)": {
+    "prefix": "httpput",
+    "body": [
+      "[HttpPut(\"{id:int}\")]",
+      "[ProducesResponseType(StatusCodes.Status204NoContent)]",
+      "[ProducesResponseType(StatusCodes.Status404NotFound)]",
+      "public async Task<IActionResult> ${1:UpdateAsync}(int id, [FromBody] ${2:Dto} dto)",
+      "{",
+      "    $0",
+      "    return NoContent();",
+      "}"
+    ],
+    "description": "ASP.NET Core HttpPut Endpoint"
+  },
+  "HttpDelete Endpoint (httpdel)": {
+    "prefix": "httpdel",
+    "body": [
+      "[HttpDelete(\"{id:int}\")]",
+      "[ProducesResponseType(StatusCodes.Status204NoContent)]",
+      "[ProducesResponseType(StatusCodes.Status404NotFound)]",
+      "public async Task<IActionResult> ${1:DeleteAsync}(int id)",
+      "{",
+      "    $0",
+      "    return NoContent();",
+      "}"
+    ],
+    "description": "ASP.NET Core HttpDelete Endpoint"
+  },
+  "EF Core Entity Configuration (efconfig)": {
+    "prefix": "efconfig",
+    "body": [
+      "using Microsoft.EntityFrameworkCore;",
+      "using Microsoft.EntityFrameworkCore.Metadata.Builders;",
+      "",
+      "public class ${1:Entity}Configuration : IEntityTypeConfiguration<${1:Entity}>",
+      "{",
+      "    public void Configure(EntityTypeBuilder<${1:Entity}> builder)",
+      "    {",
+      "        builder.HasKey(e => e.Id);",
+      "        $0",
+      "    }",
+      "}"
+    ],
+    "description": "Entity Framework Core IEntityTypeConfiguration boilerplate"
+  },
+  "xUnit Test Method (fact)": {
+    "prefix": "fact",
+    "body": [
+      "[Fact]",
+      "public void ${1:Method}_${2:Condition}_${3:ExpectedResult}()",
+      "{",
+      "    // Arrange",
+      "    $0",
+      "",
+      "    // Act",
+      "",
+      "    // Assert",
+      "}"
+    ],
+    "description": "xUnit [Fact] test template with AAA pattern"
+  },
+  "xUnit Async Test Method (facta)": {
+    "prefix": "facta",
+    "body": [
+      "[Fact]",
+      "public async Task ${1:Method}_${2:Condition}_${3:ExpectedResult}()",
+      "{",
+      "    // Arrange",
+      "    $0",
+      "",
+      "    // Act",
+      "",
+      "    // Assert",
+      "}"
+    ],
+    "description": "xUnit async [Fact] test template"
+  },
+  "xUnit Theory Test Method (theory)": {
+    "prefix": "theory",
+    "body": [
+      "[Theory]",
+      "[InlineData(${2:data})]",
+      "public void ${1:Method}_${3:Condition}_${4:ExpectedResult}(${5:params})",
+      "{",
+      "    $0",
+      "}"
+    ],
+    "description": "xUnit [Theory] parameterized test"
   }
 }

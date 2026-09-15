@@ -1,67 +1,61 @@
 
-# Configuração do PSReadLine com proteção para janelas pequenas / terminais embutidos
-if ($Host.UI.RawUI.WindowSize.Width -ge 50 -and $Host.UI.RawUI.WindowSize.Height -ge 5) {
-    try {
-        Set-PSReadLineOption -PredictionSource History -ErrorAction SilentlyContinue
-        Set-PSReadLineOption -PredictionViewStyle ListView -ErrorAction SilentlyContinue
-    } catch {}
-} else {
-    try {
-        Set-PSReadLineOption -PredictionSource History -ErrorAction SilentlyContinue
-        Set-PSReadLineOption -PredictionViewStyle InlineView -ErrorAction SilentlyContinue
-    } catch {}
+# ── PSReadLine ────────────────────────────────────────────────────────────────
+$_isWide = $Host.UI.RawUI.WindowSize.Width -ge 50 -and $Host.UI.RawUI.WindowSize.Height -ge 5
+$_view   = if ($_isWide) { "ListView" } else { "InlineView" }
+try {
+    Set-PSReadLineOption -PredictionSource History -PredictionViewStyle $_view -ErrorAction SilentlyContinue
+    Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete -ErrorAction SilentlyContinue
+} catch {}
+
+# ── PSFzf: lazy-load apenas quando Ctrl+R é premido pela primeira vez ─────────
+# (Get-Module -ListAvailable escaneia o disco inteiro — muito lento no arranque)
+$_fzfModule = "$env:USERPROFILE\Documents\PowerShell\Modules\PSFzf\PSFzf.psd1"
+if (-not (Test-Path $_fzfModule)) {
+    $_fzfModule = "$env:USERPROFILE\Documents\WindowsPowerShell\Modules\PSFzf\PSFzf.psd1"
 }
-try { Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete -ErrorAction SilentlyContinue } catch {}
-if (Get-Module -ListAvailable -Name PSFzf) {
-    Import-Module PSFzf -ErrorAction SilentlyContinue
-    try { Set-PSReadLineKeyHandler -Key Ctrl+r -ScriptBlock { Invoke-FzfHistory } -ErrorAction SilentlyContinue } catch {}
+if (Test-Path $_fzfModule) {
+    Set-PSReadLineKeyHandler -Key Ctrl+r -ScriptBlock {
+        if (-not (Get-Module PSFzf)) {
+            Import-Module PSFzf -ErrorAction SilentlyContinue
+        }
+        Invoke-FzfHistory
+    } -ErrorAction SilentlyContinue
 }
 
-# Import the Chocolatey Profile that contains the necessary code to enable
-# tab-completions to function for `choco`.
-# Be aware that if you are missing these lines from your profile, tab completion
-# for `choco` will not function.
-# See https://ch0.co/tab-completion for details.
-$ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
-if (Test-Path($ChocolateyProfile)) {
-  Import-Module "$ChocolateyProfile"
+# ── Chocolatey: adiciona apenas o PATH, sem Import-Module completo (~300ms) ───
+if ($env:ChocolateyInstall) {
+    $env:PATH = "$env:ChocolateyInstall\bin;" + $env:PATH
 }
+
+# ── Navegação ─────────────────────────────────────────────────────────────────
 Remove-Item -Path Alias:cd -Force -ErrorAction SilentlyContinue
 $projectsRoot = if ($env:PROJECTS_DIR) { $env:PROJECTS_DIR } else { "C:\projects" }
 
-# Auto-cd estilo Linux/ZSH: se digitares o nome de uma pasta (ex: `projects`, `..`, `nvim`), faz cd automaticamente!
+# Auto-cd estilo Linux/ZSH: digitar nome de pasta faz cd automaticamente
 $ExecutionContext.InvokeCommand.CommandNotFoundAction = {
     param($cmdName, $eventArgs)
-    # Suporta caminhos normais e variáveis como ~
     try {
         $expanded = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($cmdName)
         if (Test-Path -LiteralPath $expanded -PathType Container) {
             $safePath = $expanded.Replace("'", "''")
             $eventArgs.CommandScriptBlock = [ScriptBlock]::Create("Set-Location -LiteralPath '$safePath'; Get-ChildItem")
         }
-    } catch {
-        # Deixa comandos normais seguirem para o erro padrão.
-    }
+    } catch {}
 }
 
 function cd {
     param($path)
-    if ($path) {
-        Set-Location $path
-    } else {
-        Set-Location $projectsRoot
-    }
+    if ($path) { Set-Location $path } else { Set-Location $projectsRoot }
     Get-ChildItem
 }
 
-# Atalhos rápidos de navegação
 function p       { Set-Location $projectsRoot; Get-ChildItem }
 function appdata { Set-Location "$env:LOCALAPPDATA"; Get-ChildItem }
 function nvimdir { Set-Location "$env:LOCALAPPDATA\nvim"; Get-ChildItem }
 function ..      { Set-Location ..; Get-ChildItem }
 function ...     { Set-Location ..\..; Get-ChildItem }
 
-# Abre o Neovide no diretório ou ficheiro indicado: nv ., nv ficheiro.json
+# ── Neovide ───────────────────────────────────────────────────────────────────
 Remove-Item Alias:nv -Force -ErrorAction SilentlyContinue
 function nv {
     param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Path)

@@ -1,25 +1,58 @@
 return {
   {
-    "projekt0n/github-nvim-theme",
+    "catppuccin/nvim",
+    name = "catppuccin",
+    lazy = false,
     priority = 1000,
-    config = function()
-      require("github-theme").setup({
-        options = {
-          transparent = false,
-          terminal_colors = true,
+    opts = {
+      flavour = "mocha", -- latte, frappe, macchiato, mocha
+      transparent_background = false,
+      term_colors = true,
+      no_italic = true, -- Desativa itálico em todo o lado!
+      no_bold = false,
+      no_underline = false,
+      styles = {
+        comments = {},
+        conditionals = {},
+        loops = {},
+        functions = {},
+        keywords = {},
+        strings = {},
+        variables = {},
+        numbers = {},
+        booleans = {},
+        properties = {},
+        types = {},
+        operators = {},
+      },
+      integrations = {
+        treesitter = true,
+        native_lsp = {
+          enabled = true,
+          underlines = {
+            errors = { "undercurl" },
+            hints = { "undercurl" },
+            warnings = { "undercurl" },
+            information = { "undercurl" },
+          },
         },
-      })
-      vim.cmd.colorscheme("github_dark_default")
+        telescope = { enabled = true },
+        neotree = true,
+        which_key = true,
+      },
+    },
+    config = function(_, opts)
+      require("catppuccin").setup(opts)
+      vim.cmd.colorscheme("catppuccin")
 
-      -- O GitHub Dark deixa alguns grupos semânticos do LSP quase sem cor.
-      -- Estes grupos são importantes para distinguir métodos/tipos externos
-      -- (por exemplo, APIs provenientes de pacotes NuGet).
-      vim.api.nvim_set_hl(0, "@function.method", { fg = "#d2a8ff" })
-      vim.api.nvim_set_hl(0, "@method.call", { fg = "#d2a8ff" })
-      vim.api.nvim_set_hl(0, "@property", { fg = "#79c0ff" })
-      vim.api.nvim_set_hl(0, "@lsp.type.property", { fg = "#79c0ff" })
-      vim.api.nvim_set_hl(0, "@interface", { fg = "#ff7b72" })
-      vim.api.nvim_set_hl(0, "@lsp.type.interface", { fg = "#ff7b72" })
+      -- Sublinhados ondulados estilo VS Code para erros
+      vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "#f38ba8" })
+      vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn", { undercurl = true, sp = "#f9e2af" })
+      vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo", { undercurl = true, sp = "#89b4fa" })
+      vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint", { undercurl = true, sp = "#94e2d5" })
+
+      -- Inlay Hints estilo badge elegante e legível (como no VS Code)
+      vim.api.nvim_set_hl(0, "LspInlayHint", { fg = "#89b4fa", bg = "#24273a", italic = false })
     end,
   },
   {

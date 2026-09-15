@@ -1,0 +1,115 @@
+{
+  "Angular 17+ Signal Component": {
+    "prefix": ["ngcomponent", "a-component", "ngc"],
+    "body": [
+      "import { Component, ChangeDetectionStrategy, signal } from '@angular/core';",
+      "import { CommonModule } from '@angular/common';",
+      "",
+      "@Component({",
+      "  selector: 'app-${1:name}',",
+      "  standalone: true,",
+      "  imports: [CommonModule],",
+      "  templateUrl: './${1:name}.component.html',",
+      "  styleUrl: './${1:name}.component.css',",
+      "  changeDetection: ChangeDetectionStrategy.OnPush,",
+      "})",
+      "export class ${2:Name}Component {",
+      "  $0",
+      "}"
+    ],
+    "description": "Angular 17+ Standalone Component with OnPush and Signals"
+  },
+  "Angular Injectable Service": {
+    "prefix": ["ngservice", "a-service", "ngs"],
+    "body": [
+      "import { Injectable, inject } from '@angular/core';",
+      "import { HttpClient } from '@angular/common/http';",
+      "import { Observable } from 'rxjs';",
+      "",
+      "@Injectable({",
+      "  providedIn: 'root',",
+      "})",
+      "export class ${1:Name}Service {",
+      "  private readonly http = inject(HttpClient);",
+      "  private readonly apiUrl = '${2:/api}';",
+      "",
+      "  $0",
+      "}"
+    ],
+    "description": "Angular Service using modern inject() function"
+  },
+  "Angular Signal input": {
+    "prefix": ["nginput", "a-input"],
+    "body": [
+      "${1:name} = input<${2:string}>(${3:'initial'});$0"
+    ],
+    "description": "Angular 17.1+ Signal input"
+  },
+  "Angular Required Signal input": {
+    "prefix": ["nginputreq", "a-input-req"],
+    "body": [
+      "${1:name} = input.required<${2:string}>();$0"
+    ],
+    "description": "Angular 17.1+ Required Signal input"
+  },
+  "Angular Signal output": {
+    "prefix": ["ngoutput", "a-output"],
+    "body": [
+      "${1:name}Change = output<${2:void}>();$0"
+    ],
+    "description": "Angular 17.3+ Signal output"
+  },
+  "TypeScript Interface": {
+    "prefix": ["tsinterface", "interface"],
+    "body": [
+      "export interface ${1:Name} {",
+      "  ${2:id}: ${3:number};",
+      "  $0",
+      "}"
+    ],
+    "description": "TypeScript export interface"
+  },
+  "TypeScript Type Alias": {
+    "prefix": ["tstype", "type"],
+    "body": [
+      "export type ${1:Name} = ${2:string};$0"
+    ],
+    "description": "TypeScript export type"
+  },
+  "Async Function": {
+    "prefix": ["asyncfn", "afn"],
+    "body": [
+      "async function ${1:name}(${2:params}): Promise<${3:void}> {",
+      "  $0",
+      "}"
+    ],
+    "description": "Async function with typed Promise"
+  },
+  "Arrow Function": {
+    "prefix": ["arrow", "anfn"],
+    "body": [
+      "const ${1:name} = (${2:params}): ${3:void} => {",
+      "  $0",
+      "};"
+    ],
+    "description": "Typed arrow function"
+  },
+  "Console Log (clg)": {
+    "prefix": ["clg", "log"],
+    "body": [
+      "console.log('${1:label}:', ${2:value});$0"
+    ],
+    "description": "console.log with label"
+  },
+  "Try Catch Block": {
+    "prefix": ["trycatch", "tryc"],
+    "body": [
+      "try {",
+      "  $0",
+      "} catch (error) {",
+      "  console.error('Error in ${1:context}:', error);",
+      "}"
+    ],
+    "description": "Try Catch block with logging"
+  }
+}
