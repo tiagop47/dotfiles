@@ -391,7 +391,6 @@ return {
       end
 
       vim.keymap.set({ "n", "i", "v" }, "<F12>", go_to_definition, { desc = "Ir para Definição (F12 estilo VS Code)" })
-      vim.keymap.set({ "n", "i", "v" }, "<C-F12>", go_to_implementation, { desc = "Ir para Implementação (Ctrl+F12 estilo VS Code)" })
       vim.keymap.set("n", "gd", go_to_definition, { desc = "Ir para Definição" })
       vim.keymap.set("n", "gi", go_to_implementation, { desc = "Ir para Implementação" })
 

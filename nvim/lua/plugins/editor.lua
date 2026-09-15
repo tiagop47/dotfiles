@@ -295,6 +295,34 @@ return {
         end)
       end
 
+      -- Alternar ciclicamente entre múltiplos terminais abertos (<C-F12>)
+      local function cycle_terminals()
+        local terms = require("toggleterm.terminal").get_all()
+        if #terms <= 1 then return end
+
+        local current_id = vim.b.toggle_number
+        local next_term = terms[1]
+
+        for i, term in ipairs(terms) do
+          if term.id == current_id then
+            next_term = terms[(i % #terms) + 1]
+            break
+          end
+        end
+
+        if next_term then
+          if next_term:is_open() then
+            next_term:focus()
+          else
+            toggleterm.toggle_all(true)
+            toggleterm.toggle(next_term.id)
+          end
+          vim.schedule(function()
+            vim.cmd("startinsert")
+          end)
+        end
+      end
+
       -- Atalhos estilo VS Code para abrir/fechar o terminal inferior
       for _, key in ipairs({ "<C-`>", "<C-'>", "<C-~>", "<C-ç>", "<C-;>" }) do
         vim.keymap.set({ "n", "i", "t" }, key, toggle_main, { desc = "Toggle terminal inferior (abre/fecha)" })
@@ -303,6 +331,7 @@ return {
       for _, key in ipairs({ "<C-S-`>", "<C-S-'>", "<C-S-ç>", "<C-S-;>", "<C-:>", "<C-Ç>" }) do
         vim.keymap.set({ "n", "i", "t" }, key, new_terminal, { desc = "Novo terminal inferior" })
       end
+      vim.keymap.set({ "n", "t" }, "<C-F12>", cycle_terminals, { desc = "Alternar entre terminais ToggleTerm" })
       vim.keymap.set({ "n", "i", "t" }, "<A-F12>", function() cycle_terminal(1) end, { desc = "Próximo terminal" })
       vim.keymap.set({ "n", "i", "t" }, "<A-F11>", function() cycle_terminal(-1) end, { desc = "Terminal anterior" })
       vim.keymap.set({ "n", "i", "t" }, "<C-S-t>", select_terminal, { desc = "Listar terminais abertos (menu interativo)" })
