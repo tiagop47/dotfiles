@@ -27,6 +27,7 @@ require("config.keymaps")
 require("config.autocmds")
 require("config.neovide")
 require("config.window_tabs")
+require("config.dotnet_test")
 
 -- 2. Gestor de Plugins (lazy.nvim)
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"

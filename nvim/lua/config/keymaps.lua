@@ -89,3 +89,10 @@ vim.keymap.set({ "n", "v", "i" }, "<M-ScrollWheelDown>", "15<C-e>", { desc = "Sc
 -- F3 e Shift+F3: Próxima / Anterior ocorrência de pesquisa (estilo Windows/VS Code)
 vim.keymap.set({ "n", "v", "i" }, "<F3>", "<Cmd>silent! normal! nzv<CR>", { desc = "Próxima ocorrência (F3)" })
 vim.keymap.set({ "n", "v", "i" }, "<S-F3>", "<Cmd>silent! normal! Nzv<CR>", { desc = "Ocorrência anterior (Shift+F3)" })
+
+-- Execução e Sinais de Testes .NET (sinal ✘ idêntico ao erro quando falha, ✔ quando passa)
+vim.keymap.set("n", "<leader>tt", "<Cmd>Test<CR>", { desc = "Testes: Executar ficheiro atual" })
+vim.keymap.set("n", "<leader>tr", "<Cmd>TestNearest<CR>", { desc = "Testes: Executar teste sob o cursor" })
+vim.keymap.set("n", "<leader>ta", "<Cmd>TestAll<CR>", { desc = "Testes: Executar todos os testes do projeto" })
+vim.keymap.set("n", "<leader>tc", "<Cmd>TestClear<CR>", { desc = "Testes: Limpar sinais e resultados" })
+vim.keymap.set("n", "<leader>tw", "<Cmd>TestWatch<CR>", { desc = "Testes: Alternar modo Watch ao guardar (:w)" })
