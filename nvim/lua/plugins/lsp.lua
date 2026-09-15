@@ -303,40 +303,17 @@ return {
         })
       end, { desc = "Organizar usings / imports automaticamente" })
 
-      -- F12: Ir para Definição (LSP Definition / Angular Template)
-      local function go_to_definition()
-        if go_to_angular_file_reference() then
-          return
+      -- Função auxiliar para colocar o cursor na posição onde o utilizador clicou com o rato
+      local function move_cursor_to_mouse()
+        local mode = vim.fn.mode()
+        if mode == "i" then
+          vim.cmd("stopinsert")
+        elseif mode:match("[vV\22]") then
+          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
         end
 
-        local has_telescope, tb = pcall(require, "telescope.builtin")
-        if has_telescope and tb.lsp_definitions then
-          tb.lsp_definitions()
-        else
-          vim.lsp.buf.definition()
-        end
-      end
-
-      -- Ctrl + F12: Mostrar todas as Implementações listadas no Telescope
-      local function show_all_implementations()
-        local has_telescope, tb = pcall(require, "telescope.builtin")
-        if has_telescope and tb.lsp_implementations then
-          tb.lsp_implementations()
-        else
-          vim.lsp.buf.implementation()
-        end
-      end
-
-      vim.keymap.set({ "n", "i", "v" }, "<F12>", go_to_definition, { desc = "Ir para Definição (F12 estilo VS Code)" })
-      vim.keymap.set({ "n", "i", "v" }, "<C-F12>", show_all_implementations, { desc = "Listar todas as implementações (Ctrl+F12 estilo VS Code)" })
-      vim.keymap.set("n", "gd", go_to_definition, { desc = "Ir para Definição" })
-      vim.keymap.set("n", "gi", show_all_implementations, { desc = "Listar Implementações" })
-
-      -- Ctrl + Clique esquerdo: Ir para implementação (abre Telescope se houver múltiplas)
-      vim.keymap.set("n", "<C-LeftMouse>", function()
-        -- Move o cursor para onde clicaste antes de chamar a implementação
         local mouse = vim.fn.getmousepos()
-        if mouse and mouse.winid > 0 then
+        if mouse and mouse.winid > 0 and vim.api.nvim_win_is_valid(mouse.winid) and mouse.line > 0 then
           vim.api.nvim_set_current_win(mouse.winid)
           local bufnr = vim.api.nvim_win_get_buf(mouse.winid)
           local line_count = vim.api.nvim_buf_line_count(bufnr)
@@ -345,8 +322,85 @@ return {
           local column = math.max(0, math.min(mouse.column - 1, #line_text))
           vim.api.nvim_win_set_cursor(mouse.winid, { line, column })
         end
-        show_all_implementations()
-      end, { desc = "Ctrl+Clique: Ir para implementação (Telescope se múltiplas)" })
+      end
+
+      -- F12: Ir para Definição (LSP Definition / Angular Template)
+      local function go_to_definition()
+        pcall(function() vim.cmd("normal! m'") end)
+        if go_to_angular_file_reference() then
+          return
+        end
+
+        local has_telescope, tb = pcall(require, "telescope.builtin")
+        if has_telescope and tb.lsp_definitions then
+          tb.lsp_definitions({ reuse_win = true })
+        else
+          vim.lsp.buf.definition()
+        end
+      end
+
+      -- Ir para Implementação (com fallback inteligente para Definição se for classe/método concreto)
+      local function go_to_implementation()
+        pcall(function() vim.cmd("normal! m'") end)
+        if go_to_angular_file_reference() then
+          return
+        end
+
+        local bufnr = vim.api.nvim_get_current_buf()
+        local clients = vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/implementation" })
+        if #clients == 0 then
+          go_to_definition()
+          return
+        end
+
+        local encoding = (clients[1] and clients[1].offset_encoding) or "utf-8"
+        local params = vim.lsp.util.make_position_params(0, encoding)
+
+        vim.lsp.buf_request_all(bufnr, "textDocument/implementation", params, function(results)
+          local all_locations = {}
+          for _, resp in pairs(results or {}) do
+            if resp and resp.result then
+              if vim.islist(resp.result) then
+                for _, loc in ipairs(resp.result) do
+                  table.insert(all_locations, loc)
+                end
+              elseif type(resp.result) == "table" and (resp.result.uri or resp.result.targetUri) then
+                table.insert(all_locations, resp.result)
+              end
+            end
+          end
+
+          if #all_locations == 1 then
+            if vim.lsp.util.show_document then
+              vim.lsp.util.show_document(all_locations[1], encoding, { focus = true, reuse_win = true })
+            else
+              vim.lsp.util.jump_to_location(all_locations[1], encoding)
+            end
+          elseif #all_locations > 1 then
+            local has_telescope, tb = pcall(require, "telescope.builtin")
+            if has_telescope and tb.lsp_implementations then
+              tb.lsp_implementations({ reuse_win = true })
+            else
+              vim.lsp.buf.implementation()
+            end
+          else
+            -- Sem implementações separadas (ex: classe concreta, record, método normal, etc.) -> Ir para Definição
+            go_to_definition()
+          end
+        end)
+      end
+
+      vim.keymap.set({ "n", "i", "v" }, "<F12>", go_to_definition, { desc = "Ir para Definição (F12 estilo VS Code)" })
+      vim.keymap.set({ "n", "i", "v" }, "<C-F12>", go_to_implementation, { desc = "Ir para Implementação (Ctrl+F12 estilo VS Code)" })
+      vim.keymap.set("n", "gd", go_to_definition, { desc = "Ir para Definição" })
+      vim.keymap.set("n", "gi", go_to_implementation, { desc = "Ir para Implementação" })
+
+      -- Ctrl + Clique esquerdo: Ir para implementação (ou definição se concreta) nos modos normal, inserção e visual
+      vim.keymap.set({ "n", "i", "v" }, "<C-LeftMouse>", function()
+        move_cursor_to_mouse()
+        go_to_implementation()
+      end, { desc = "Ctrl+Clique: Ir para implementação (ou definição se concreta)" })
+      vim.keymap.set({ "n", "i", "v" }, "<C-LeftRelease>", "<Nop>", { desc = "Ignorar soltar do clique" })
 
       -- Alt+Shift+F: Formatar ficheiro (Prettier para HTML/Web/Angular, LSP para C#/Python/Lua)
       vim.keymap.set("n", "<A-S-f>", function()
