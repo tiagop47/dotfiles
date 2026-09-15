@@ -19,22 +19,9 @@ return {
         },
         indent = {
           enable = true,
-          disable = { "html" }, -- O indentador de HTML do Tree-sitter tem um bug crónico que encosta tudo à esquerda
+          disable = { "html" },
         },
       })
-    end,
-  },
-  {
-    "nvim-treesitter/nvim-treesitter-context",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    config = function()
-      -- Não mostrar breadcrumb/contexto (namespace, classe ou método) acima
-      -- do código; o cabeçalho fica reservado exclusivamente para as tabs.
-      local ok, context = pcall(require, "treesitter-context")
-      if ok then
-        context.setup({ enable = false })
-        context.disable()
-      end
     end,
   },
 }
