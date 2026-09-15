@@ -94,5 +94,7 @@ vim.keymap.set({ "n", "v", "i" }, "<S-F3>", "<Cmd>silent! normal! Nzv<CR>", { de
 vim.keymap.set("n", "<leader>tt", "<Cmd>Test<CR>", { desc = "Testes: Executar ficheiro atual" })
 vim.keymap.set("n", "<leader>tr", "<Cmd>TestNearest<CR>", { desc = "Testes: Executar teste sob o cursor" })
 vim.keymap.set("n", "<leader>ta", "<Cmd>TestAll<CR>", { desc = "Testes: Executar todos os testes do projeto" })
+vim.keymap.set("n", "<leader>to", "<Cmd>TestOutput<CR>", { desc = "Testes: Mostrar/Ocultar painel de output" })
+vim.keymap.set("n", "<leader>tp", "<Cmd>TestTerminal<CR>", { desc = "Testes: Executar no terminal PowerShell interativo" })
 vim.keymap.set("n", "<leader>tc", "<Cmd>TestClear<CR>", { desc = "Testes: Limpar sinais e resultados" })
 vim.keymap.set("n", "<leader>tw", "<Cmd>TestWatch<CR>", { desc = "Testes: Alternar modo Watch ao guardar (:w)" })

@@ -11,7 +11,10 @@ vim.fn.sign_define("TestPassedSign", {
 })
 vim.api.nvim_set_hl(0, "DiagnosticOk", { fg = "#a6e3a1", bold = true })
 
--- Modo Watch (auto-run ao guardar)
+-- Armazena o último output e estado do painel de output
+M.last_output = ""
+M.output_buf = nil
+M.output_win = nil
 M.watch_active = false
 
 --- Encontra o ficheiro .csproj mais próximo a partir do diretório atual
@@ -48,7 +51,6 @@ local function get_nearest_test_name()
 
   for i = #lines, 1, -1 do
     local line = lines[i]
-    -- Padrões comuns de C# / xUnit / NUnit: [Fact], [Theory], public async Task / public void
     local name = line:match("public%s+async%s+Task%s+([%w_]+)")
       or line:match("public%s+void%s+([%w_]+)")
       or line:match("public%s+[%w<>]+%s+([%w_]+)%s*%(")
@@ -59,14 +61,122 @@ local function get_nearest_test_name()
   return nil
 end
 
---- Limpa todos os sinais e diagnósticos de testes
+--- Limpa todos os sinais, diagnósticos e fecha o painel de output
 function M.clear()
   vim.diagnostic.reset(test_ns)
   vim.fn.sign_unplace(sign_group)
-  vim.notify("Resultados dos testes limpos.", vim.log.levels.INFO)
+  if M.output_win and vim.api.nvim_win_is_valid(M.output_win) then
+    vim.api.nvim_win_close(M.output_win, true)
+    M.output_win = nil
+  end
+  vim.notify("Resultados e painel de testes limpos.", vim.log.levels.INFO)
+end
+
+--- Abre o painel inferior com o output completo e formatado do PowerShell
+function M.show_output()
+  if not M.last_output or M.last_output == "" then
+    vim.notify("Ainda não há output de testes para mostrar.", vim.log.levels.WARN)
+    return
+  end
+
+  local main_win = vim.api.nvim_get_current_win()
+
+  -- Se a janela já existe e é válida, foca-a
+  if M.output_win and vim.api.nvim_win_is_valid(M.output_win) then
+    vim.api.nvim_set_current_win(M.output_win)
+  else
+    -- Abre um split inferior limpo com 14 linhas de altura (estilo painel de testes do VS Code)
+    vim.cmd("botright 14split")
+    M.output_win = vim.api.nvim_get_current_win()
+    vim.wo[M.output_win].winfixheight = true
+    vim.wo[M.output_win].number = false
+    vim.wo[M.output_win].relativenumber = false
+    vim.wo[M.output_win].signcolumn = "no"
+  end
+
+  if not M.output_buf or not vim.api.nvim_buf_is_valid(M.output_buf) then
+    M.output_buf = vim.api.nvim_create_buf(false, true)
+    vim.bo[M.output_buf].buftype = "nofile"
+    vim.bo[M.output_buf].bufhidden = "hide"
+    vim.bo[M.output_buf].swapfile = false
+    vim.bo[M.output_buf].filetype = "dotnettest"
+
+    local opts = { buffer = M.output_buf, silent = true }
+
+    -- 'q' e <Esc> fecham a janela na hora
+    vim.keymap.set("n", "q", function()
+      if M.output_win and vim.api.nvim_win_is_valid(M.output_win) then
+        vim.api.nvim_win_close(M.output_win, true)
+        M.output_win = nil
+      end
+    end, opts)
+
+    vim.keymap.set("n", "<Esc>", function()
+      if M.output_win and vim.api.nvim_win_is_valid(M.output_win) then
+        vim.api.nvim_win_close(M.output_win, true)
+        M.output_win = nil
+      end
+    end, opts)
+
+    -- <CR> (Enter) em cima de qualquer linha do stack trace salta diretamente para o ficheiro e linha!
+    vim.keymap.set("n", "<CR>", function()
+      local line_str = vim.api.nvim_get_current_line()
+      local file, lnum = line_str:match("in%s+([%a]:\\[^:\r\n]+):line%s+(%d+)")
+      if not file then
+        file, lnum = line_str:match("in%s+(/[^:\r\n]+):line%s+(%d+)")
+      end
+      if not file then
+        file, lnum = line_str:match("([%a]:[%w%._\\/%-]+)%(?(%d+)[,:]?(%d*)%)?")
+      end
+
+      if file and vim.fn.filereadable(file) == 1 then
+        vim.cmd("wincmd p") -- Volta à janela de código superior
+        vim.cmd("edit " .. vim.fn.fnameescape(file))
+        if lnum and tonumber(lnum) then
+          vim.api.nvim_win_set_cursor(0, { tonumber(lnum), 0 })
+        end
+      end
+    end, opts)
+  end
+
+  vim.bo[M.output_buf].modifiable = true
+  local lines = vim.split(M.last_output, "[\r\n]+")
+  vim.api.nvim_buf_set_lines(M.output_buf, 0, -1, false, lines)
+  vim.bo[M.output_buf].modifiable = false
+  vim.api.nvim_win_set_buf(M.output_win, M.output_buf)
+
+  -- Destaque de sintaxe no painel (Verde para sucesso, Vermelho para falhas, Amarelo para stack traces)
+  vim.api.nvim_buf_clear_namespace(M.output_buf, test_ns, 0, -1)
+  for idx, line in ipairs(lines) do
+    if line:match("^%s*Failed") or line:match("Test Run Failed") or line:match("Build FAILED") then
+      vim.api.nvim_buf_add_highlight(M.output_buf, test_ns, "DiagnosticError", idx - 1, 0, -1)
+    elseif line:match("^%s*Passed") or line:match("Test Run Successful") then
+      vim.api.nvim_buf_add_highlight(M.output_buf, test_ns, "DiagnosticOk", idx - 1, 0, -1)
+    elseif line:match("^%s*Error Message:") or line:match("^%s*Stack Trace:") then
+      vim.api.nvim_buf_add_highlight(M.output_buf, test_ns, "DiagnosticWarn", idx - 1, 0, -1)
+    elseif line:match("in%s+[%a]:\\") or line:match("in%s+/") then
+      vim.api.nvim_buf_add_highlight(M.output_buf, test_ns, "Underlined", idx - 1, 0, -1)
+    end
+  end
+
+  -- Mantém o cursor na janela onde estavas a editar código
+  if vim.api.nvim_win_is_valid(main_win) then
+    vim.api.nvim_set_current_win(main_win)
+  end
+end
+
+--- Alterna a visualização do painel de output de testes
+function M.toggle_output()
+  if M.output_win and vim.api.nvim_win_is_valid(M.output_win) then
+    vim.api.nvim_win_close(M.output_win, true)
+    M.output_win = nil
+  else
+    M.show_output()
+  end
 end
 
 --- Executa os testes do .NET e publica os resultados no código (✘ e ✔)
+--- Se houver falhas, abre automaticamente o painel de output no fundo!
 ---@param opts? { nearest?: boolean, file?: boolean, all?: boolean }
 function M.run(opts)
   opts = opts or {}
@@ -117,9 +227,11 @@ function M.run(opts)
       local stdout = result.stdout or ""
       local stderr = result.stderr or ""
       local output = stdout .. "\n" .. stderr
+      M.last_output = output
 
       if output:find("Build FAILED") then
         vim.notify("✘ Falha na compilação dos testes. Corrige os erros de compilação primeiro.", vim.log.levels.ERROR)
+        M.show_output()
         return
       end
 
@@ -127,13 +239,6 @@ function M.run(opts)
       local passed_tests = {}
       local failed_tests = {}
 
-      -- Parser de testes com falha
-      -- Extrai blocos do formato:
-      --   Failed <TestName> [<duration>]
-      --   Error Message:
-      --    <Message>
-      --   Stack Trace:
-      --      at ... in <FilePath>:line <LineNumber>
       local lines = vim.split(output, "[\r\n]+")
       local i = 1
       while i <= #lines do
@@ -189,14 +294,12 @@ function M.run(opts)
             file = file_path,
             line = line_num,
           })
-          -- Recua 1 linha para o loop externo processar a próxima entrada
           i = i - 1
         end
 
         i = i + 1
       end
 
-      -- Aplica os sinais nos ficheiros
       local current_valid_buf = vim.api.nvim_buf_is_valid(current_buf) and current_buf or nil
 
       -- 1. Trata os testes que falharam (Gera o X / ✘ idêntico ao de erros)
@@ -258,16 +361,52 @@ function M.run(opts)
           string.format("✘ %d teste(s) falharam! (%d passaram)", #failed_tests, #passed_tests),
           vim.log.levels.ERROR
         )
+        -- ABRE AUTOMATICAMENTE O OUTPUT NO FUNDO QUANDO UM TESTE FALHA!
+        M.show_output()
       elseif total > 0 then
         vim.notify(
           string.format("✔ Todos os %d teste(s) passaram com sucesso!", total),
           vim.log.levels.INFO
         )
+        -- Se todos passaram e o painel estava aberto, podemos fechá-lo
+        if M.output_win and vim.api.nvim_win_is_valid(M.output_win) then
+          vim.api.nvim_win_close(M.output_win, true)
+          M.output_win = nil
+        end
       else
         vim.notify("Nenhum resultado de teste encontrado na saída.", vim.log.levels.WARN)
       end
     end)
   end)
+end
+
+--- Executa os testes diretamente no terminal interativo do PowerShell via ToggleTerm
+function M.run_in_terminal(opts)
+  opts = opts or {}
+  local project_path = find_closest_csproj()
+  local cmd = "dotnet test"
+  if project_path then
+    cmd = cmd .. ' "' .. project_path .. '"'
+  end
+
+  if opts.nearest then
+    local nearest = get_nearest_test_name()
+    if nearest then
+      cmd = cmd .. ' --filter "FullyQualifiedName~' .. nearest .. '"'
+    end
+  elseif opts.file then
+    local class_name = vim.fn.expand("%:t:r")
+    if class_name and class_name ~= "" then
+      cmd = cmd .. ' --filter "FullyQualifiedName~' .. class_name .. '"'
+    end
+  end
+
+  local ok, toggleterm = pcall(require, "toggleterm")
+  if ok then
+    toggleterm.exec(cmd, 1, 14)
+  else
+    vim.cmd("botright 14split | terminal " .. cmd)
+  end
 end
 
 --- Alterna o modo de execução automática ao salvar ficheiro de teste
@@ -296,5 +435,7 @@ vim.api.nvim_create_user_command("TestNearest", function() M.run({ nearest = tru
 vim.api.nvim_create_user_command("TestAll", function() M.run({ all = true }) end, { desc = "Executar todos os testes do projeto" })
 vim.api.nvim_create_user_command("TestClear", M.clear, { desc = "Limpar resultados de testes" })
 vim.api.nvim_create_user_command("TestWatch", M.toggle_watch, { desc = "Alternar execução automática de testes ao salvar" })
+vim.api.nvim_create_user_command("TestOutput", M.toggle_output, { desc = "Alternar painel de output de testes" })
+vim.api.nvim_create_user_command("TestTerminal", function() M.run_in_terminal({ file = true }) end, { desc = "Executar testes no terminal PowerShell interativo" })
 
 return M
