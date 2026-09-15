@@ -17,9 +17,17 @@ return {
     "seblj/roslyn.nvim",
     ft = { "cs", "razor", "cshtml" },
     opts = {
-      filewatching = "auto",
-      broad_search = true, -- Encontra automaticamente soluções (.sln / .slnf) em pastas pai (essencial para ASP.NET Core)
-      lock_target = false,
+      filewatching = "roslyn", -- Roslyn gere filewatching internamente com o .NET FileSystemWatcher nativo
+      broad_search = true, -- Encontra automaticamente soluções (.sln / .slnf) em pastas pai
+      lock_target = true, -- Mantém a solução ativa para que novas classes pertençam à mesma solução sem recálculo
+      choose_target = function(targets)
+        for _, target in ipairs(targets) do
+          if target:match("%.sln$") then
+            return target
+          end
+        end
+        return targets[1]
+      end,
     },
   },
   {
@@ -90,8 +98,14 @@ return {
       })
 
       -- Microsoft Roslyn LSP (C# e ASP.NET Core) configurado com capacidades completas de autocompletion e inlay hints
+      local roslyn_caps = vim.deepcopy(caps)
+      roslyn_caps.workspace = roslyn_caps.workspace or {}
+      roslyn_caps.workspace.didChangeWatchedFiles = {
+        dynamicRegistration = false, -- Roslyn gere o filewatching internamente via FileSystemWatcher nativo do .NET
+      }
+
       vim.lsp.config.roslyn = {
-        capabilities = caps,
+        capabilities = roslyn_caps,
         settings = {
           ["csharp|symbol_search"] = {
             dotnet_search_reference_assemblies = true,
@@ -211,7 +225,42 @@ return {
         end,
       })
 
+      -- Sincronização e Inlay Hints automáticos quando crias ou guardas uma nova classe/ficheiro C#
+      vim.api.nvim_create_autocmd("BufWritePost", {
+        pattern = { "*.cs", "*.razor", "*.cshtml" },
+        callback = function(args)
+          local clients = vim.lsp.get_clients({ name = "roslyn" })
+          if #clients == 0 then return end
+
+          local uri = vim.uri_from_bufnr(args.buf)
+          for _, client in ipairs(clients) do
+            -- Notifica o Roslyn diretamente de que o ficheiro existe no disco
+            pcall(client.notify, "workspace/didChangeWatchedFiles", {
+              changes = {
+                { uri = uri, type = 1 }, -- 1: Created
+                { uri = uri, type = 2 }, -- 2: Changed
+              },
+            })
+            if not vim.lsp.buf_is_attached(args.buf, client.id) then
+              pcall(vim.lsp.buf_attach_client, args.buf, client.id)
+            end
+          end
+
+          pcall(vim.diagnostic.enable, true, { bufnr = args.buf })
+          pcall(vim.lsp.inlay_hint.enable, true, { bufnr = args.buf })
+        end,
+      })
+
+      -- Garante que Inlay Hints estão sempre visíveis ao entrar num ficheiro C#
+      vim.api.nvim_create_autocmd("BufEnter", {
+        pattern = { "*.cs", "*.razor", "*.cshtml" },
+        callback = function(args)
+          pcall(vim.lsp.inlay_hint.enable, true, { bufnr = args.buf })
+        end,
+      })
+
       -- Keymaps universais de LSP
+      vim.keymap.set("n", "<leader>lr", "<cmd>LspRestart roslyn<cr>", { desc = "Reiniciar Roslyn LSP (C#)" })
       vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, { desc = "Renomear símbolo em todo o projeto (F2 Refactor)" })
       vim.keymap.set("n", "<C-q>", vim.lsp.buf.hover, { desc = "Documentação rápida" })
       vim.keymap.set({ "n", "v" }, "<C-.>", vim.lsp.buf.code_action, { desc = "Sugestões e ações de código" })
