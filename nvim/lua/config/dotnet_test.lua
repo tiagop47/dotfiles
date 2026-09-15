@@ -3,15 +3,26 @@ local M = {}
 local test_ns = vim.api.nvim_create_namespace("dotnet_tests")
 local sign_group = "DotnetTestSigns"
 
--- Define o sinal de sucesso (✔ verde)
+-- Cores explícitas e contrastantes estilo Catppuccin Mocha
+vim.api.nvim_set_hl(0, "TestPassedSign", { fg = "#a6e3a1", bold = true }) -- Verde
+vim.api.nvim_set_hl(0, "TestFailedSign", { fg = "#f38ba8", bold = true }) -- Vermelho
+
+-- Define os sinais na margem lateral (Gutter / SignColumn)
 vim.fn.sign_define("TestPassedSign", {
   text = "✔",
-  texthl = "DiagnosticOk",
+  texthl = "TestPassedSign",
+  linehl = "",
   numhl = "",
 })
-vim.api.nvim_set_hl(0, "DiagnosticOk", { fg = "#a6e3a1", bold = true })
 
--- Armazena o último output e estado do painel de output
+vim.fn.sign_define("TestFailedSign", {
+  text = "✘",
+  texthl = "TestFailedSign",
+  linehl = "",
+  numhl = "",
+})
+
+-- Armazena o último output e estado do painel
 M.last_output = ""
 M.output_buf = nil
 M.output_win = nil
@@ -32,12 +43,12 @@ local function find_closest_csproj(start_dir)
   return nil
 end
 
---- Encontra a linha de definição de um método no buffer
-local function find_method_line_in_buf(bufnr, method_name)
-  if not vim.api.nvim_buf_is_valid(bufnr) then return nil end
+--- Encontra a linha de um teste no buffer usando busca de texto simples e fiável
+local function find_test_line(bufnr, method_name)
+  if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then return nil end
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   for i, line in ipairs(lines) do
-    if line:match("[%w_]*" .. method_name .. "[%s%(<]") then
+    if line:find(method_name, 1, true) then
       return i
     end
   end
@@ -61,15 +72,20 @@ local function get_nearest_test_name()
   return nil
 end
 
---- Limpa todos os sinais, diagnósticos e fecha o painel de output
+--- Limpa todos os sinais e diagnósticos de testes em todos os buffers abertos
 function M.clear()
-  vim.diagnostic.reset(test_ns)
   vim.fn.sign_unplace(sign_group)
+  for _, bnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(bnr) then
+      vim.api.nvim_buf_clear_namespace(bnr, test_ns, 0, -1)
+      vim.diagnostic.reset(test_ns, bnr)
+    end
+  end
   if M.output_win and vim.api.nvim_win_is_valid(M.output_win) then
     vim.api.nvim_win_close(M.output_win, true)
     M.output_win = nil
   end
-  vim.notify("Resultados e painel de testes limpos.", vim.log.levels.INFO)
+  vim.notify("Sinais e resultados dos testes limpos.", vim.log.levels.INFO)
 end
 
 --- Abre o painel inferior com o output completo e formatado do PowerShell
@@ -81,11 +97,9 @@ function M.show_output()
 
   local main_win = vim.api.nvim_get_current_win()
 
-  -- Se a janela já existe e é válida, foca-a
   if M.output_win and vim.api.nvim_win_is_valid(M.output_win) then
     vim.api.nvim_set_current_win(M.output_win)
   else
-    -- Abre um split inferior limpo com 14 linhas de altura (estilo painel de testes do VS Code)
     vim.cmd("botright 14split")
     M.output_win = vim.api.nvim_get_current_win()
     vim.wo[M.output_win].winfixheight = true
@@ -103,7 +117,6 @@ function M.show_output()
 
     local opts = { buffer = M.output_buf, silent = true }
 
-    -- 'q' e <Esc> fecham a janela na hora
     vim.keymap.set("n", "q", function()
       if M.output_win and vim.api.nvim_win_is_valid(M.output_win) then
         vim.api.nvim_win_close(M.output_win, true)
@@ -118,7 +131,7 @@ function M.show_output()
       end
     end, opts)
 
-    -- <CR> (Enter) em cima de qualquer linha do stack trace salta diretamente para o ficheiro e linha!
+    -- <CR> salta diretamente para o ficheiro e linha
     vim.keymap.set("n", "<CR>", function()
       local line_str = vim.api.nvim_get_current_line()
       local file, lnum = line_str:match("in%s+([%a]:\\[^:\r\n]+):line%s+(%d+)")
@@ -130,7 +143,7 @@ function M.show_output()
       end
 
       if file and vim.fn.filereadable(file) == 1 then
-        vim.cmd("wincmd p") -- Volta à janela de código superior
+        vim.cmd("wincmd p")
         vim.cmd("edit " .. vim.fn.fnameescape(file))
         if lnum and tonumber(lnum) then
           vim.api.nvim_win_set_cursor(0, { tonumber(lnum), 0 })
@@ -145,13 +158,12 @@ function M.show_output()
   vim.bo[M.output_buf].modifiable = false
   vim.api.nvim_win_set_buf(M.output_win, M.output_buf)
 
-  -- Destaque de sintaxe no painel (Verde para sucesso, Vermelho para falhas, Amarelo para stack traces)
   vim.api.nvim_buf_clear_namespace(M.output_buf, test_ns, 0, -1)
   for idx, line in ipairs(lines) do
     if line:match("^%s*Failed") or line:match("Test Run Failed") or line:match("Build FAILED") then
-      vim.api.nvim_buf_add_highlight(M.output_buf, test_ns, "DiagnosticError", idx - 1, 0, -1)
+      vim.api.nvim_buf_add_highlight(M.output_buf, test_ns, "TestFailedSign", idx - 1, 0, -1)
     elseif line:match("^%s*Passed") or line:match("Test Run Successful") then
-      vim.api.nvim_buf_add_highlight(M.output_buf, test_ns, "DiagnosticOk", idx - 1, 0, -1)
+      vim.api.nvim_buf_add_highlight(M.output_buf, test_ns, "TestPassedSign", idx - 1, 0, -1)
     elseif line:match("^%s*Error Message:") or line:match("^%s*Stack Trace:") then
       vim.api.nvim_buf_add_highlight(M.output_buf, test_ns, "DiagnosticWarn", idx - 1, 0, -1)
     elseif line:match("in%s+[%a]:\\") or line:match("in%s+/") then
@@ -159,13 +171,12 @@ function M.show_output()
     end
   end
 
-  -- Mantém o cursor na janela onde estavas a editar código
   if vim.api.nvim_win_is_valid(main_win) then
     vim.api.nvim_set_current_win(main_win)
   end
 end
 
---- Alterna a visualização do painel de output de testes
+--- Alterna a visualização do painel de output
 function M.toggle_output()
   if M.output_win and vim.api.nvim_win_is_valid(M.output_win) then
     vim.api.nvim_win_close(M.output_win, true)
@@ -175,8 +186,7 @@ function M.toggle_output()
   end
 end
 
---- Executa os testes do .NET e publica os resultados no código (✘ e ✔)
---- Se houver falhas, abre automaticamente o painel de output no fundo!
+--- Executa os testes do .NET e coloca os sinais na margem lateral (✘ e ✔)
 ---@param opts? { nearest?: boolean, file?: boolean, all?: boolean }
 function M.run(opts)
   opts = opts or {}
@@ -218,8 +228,13 @@ function M.run(opts)
   vim.notify("🧪 A executar " .. filter_desc .. "...", vim.log.levels.INFO)
 
   -- Limpa sinais anteriores
-  vim.diagnostic.reset(test_ns)
   vim.fn.sign_unplace(sign_group)
+  for _, bnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(bnr) then
+      vim.api.nvim_buf_clear_namespace(bnr, test_ns, 0, -1)
+      vim.diagnostic.reset(test_ns, bnr)
+    end
+  end
 
   -- Execução assíncrona não-bloqueante
   vim.system(cmd, { text = true }, function(result)
@@ -235,47 +250,62 @@ function M.run(opts)
         return
       end
 
-      local diags_by_buf = {}
       local passed_tests = {}
       local failed_tests = {}
 
       local lines = vim.split(output, "[\r\n]+")
       local i = 1
       while i <= #lines do
-        local line = lines[i]
+        -- Remove sequências de escape ANSI e retornos de carro
+        local raw_line = lines[i]:gsub("\27%[[0-9;]*m", ""):gsub("\r", "")
 
-        -- Deteta teste que passou
-        local passed_name = line:match("^%s*Passed%s+([%w%._]+)")
-        if passed_name then
-          local short_name = passed_name:match("([%w_]+)$") or passed_name
-          table.insert(passed_tests, short_name)
+        -- 1. Deteta teste que passou:
+        -- Ex: "  Passed Unitarios.Application.Tests.ArtigoServiceTests.CriarArtigo_Valido [13 ms]"
+        local passed_name_full = raw_line:match("^%s*Passed%s+(.-)%s*%[") or raw_line:match("^%s*Passed%s+(.+)")
+        if passed_name_full then
+          passed_name_full = passed_name_full:gsub("%s+$", "")
+          local method_name = passed_name_full:match("([%w_]+)%s*%(") or passed_name_full:match("([%w_]+)$") or passed_name_full
+          table.insert(passed_tests, {
+            name = method_name,
+            full = passed_name_full,
+          })
         end
 
-        -- Deteta teste que falhou
-        local failed_name = line:match("^%s*Failed%s+([%w%._]+)")
-        if failed_name then
-          local short_name = failed_name:match("([%w_]+)$") or failed_name
+        -- 2. Deteta teste que falhou:
+        -- Ex: "  Failed Unitarios.Application.Tests.ArtigoServiceTests.ObterPorId_Invalido [15 ms]"
+        local failed_name_full = raw_line:match("^%s*Failed%s+(.-)%s*%[") or raw_line:match("^%s*Failed%s+(.+)")
+        if failed_name_full then
+          failed_name_full = failed_name_full:gsub("%s+$", "")
+          local method_name = failed_name_full:match("([%w_]+)%s*%(") or failed_name_full:match("([%w_]+)$") or failed_name_full
+
           local error_msg = ""
           local file_path = nil
           local line_num = nil
 
           i = i + 1
-          while i <= #lines and not lines[i]:match("^%s*Failed%s+") and not lines[i]:match("^%s*Passed%s+") do
-            local sub_line = lines[i]
-            if sub_line:match("^%s*Error Message:") then
+          while i <= #lines do
+            local sub_raw = lines[i]:gsub("\27%[[0-9;]*m", ""):gsub("\r", "")
+            if sub_raw:match("^%s*Failed%s+") or sub_raw:match("^%s*Passed%s+") then
+              break
+            end
+
+            if sub_raw:match("^%s*Error Message:") then
               i = i + 1
               local msg_lines = {}
-              while i <= #lines and not lines[i]:match("^%s*Stack Trace:") and not lines[i]:match("^%s*Failed%s+") and not lines[i]:match("^%s*Passed%s+") do
-                table.insert(msg_lines, lines[i]:gsub("^%s+", ""))
+              while i <= #lines do
+                local msg_raw = lines[i]:gsub("\27%[[0-9;]*m", ""):gsub("\r", "")
+                if msg_raw:match("^%s*Stack Trace:") or msg_raw:match("^%s*Failed%s+") or msg_raw:match("^%s*Passed%s+") then
+                  break
+                end
+                table.insert(msg_lines, msg_raw:gsub("^%s+", ""))
                 i = i + 1
               end
               error_msg = table.concat(msg_lines, " "):gsub("%s+", " ")
             end
 
-            -- Captura caminho do ficheiro e linha do stack trace
-            local matched_file, matched_line = sub_line:match("in%s+([%a]:\\[^:\r\n]+):line%s+(%d+)")
+            local matched_file, matched_line = sub_raw:match("in%s+([%a]:\\[^:\r\n]+):line%s+(%d+)")
             if not matched_file then
-              matched_file, matched_line = sub_line:match("in%s+(/[^:\r\n]+):line%s+(%d+)")
+              matched_file, matched_line = sub_raw:match("in%s+(/[^:\r\n]+):line%s+(%d+)")
             end
 
             if matched_file and matched_line then
@@ -289,7 +319,8 @@ function M.run(opts)
           end
 
           table.insert(failed_tests, {
-            name = short_name,
+            name = method_name,
+            full = failed_name_full,
             error = error_msg ~= "" and error_msg or "Falha na asserção do teste",
             file = file_path,
             line = line_num,
@@ -300,27 +331,74 @@ function M.run(opts)
         i = i + 1
       end
 
-      local current_valid_buf = vim.api.nvim_buf_is_valid(current_buf) and current_buf or nil
+      -- =====================================================================
+      -- COLOCAÇÃO DOS SINAIS NA MARGEM LATERAL (GUTTER) E TEXTO VIRTUAL
+      -- =====================================================================
 
-      -- 1. Trata os testes que falharam (Gera o X / ✘ idêntico ao de erros)
+      -- Lista de buffers relevantes para colocar os sinais
+      local buffers_to_check = {}
+      if vim.api.nvim_buf_is_valid(current_buf) then
+        table.insert(buffers_to_check, current_buf)
+      end
+      for _, bnr in ipairs(vim.api.nvim_list_bufs()) do
+        if bnr ~= current_buf and vim.api.nvim_buf_is_loaded(bnr) and vim.bo[bnr].buftype == "" then
+          table.insert(buffers_to_check, bnr)
+        end
+      end
+
+      -- 1. SINAIS PARA TESTES QUE PASSARAM (✔ verde de lado na margem)
+      for _, pt in ipairs(passed_tests) do
+        for _, bnr in ipairs(buffers_to_check) do
+          local line = find_test_line(bnr, pt.name)
+          if line then
+            -- Sign clássico na SignColumn (margem lateral esquerda)
+            pcall(vim.fn.sign_place, 0, sign_group, "TestPassedSign", bnr, {
+              lnum = line,
+              priority = 20,
+            })
+
+            -- Extmark moderno de Neovim com sign_text + virt_text
+            pcall(vim.api.nvim_buf_set_extmark, bnr, test_ns, line - 1, 0, {
+              sign_text = "✔",
+              sign_hl_group = "TestPassedSign",
+              virt_text = { { "✔ passou", "TestPassedSign" } },
+              virt_text_pos = "eol",
+            })
+          end
+        end
+      end
+
+      -- 2. SINAIS PARA TESTES QUE FALHARAM (✘ vermelho de lado na margem)
+      local diags_by_buf = {}
       for _, ft in ipairs(failed_tests) do
-        local target_buf = current_valid_buf
+        local target_buf = current_buf
         if ft.file and vim.fn.filereadable(ft.file) == 1 then
           target_buf = vim.fn.bufadd(ft.file)
           pcall(vim.fn.bufload, target_buf)
         end
 
         if target_buf and vim.api.nvim_buf_is_valid(target_buf) then
-          local lnum = ft.line and (ft.line - 1) or nil
-          if not lnum then
-            local found_line = find_method_line_in_buf(target_buf, ft.name)
-            lnum = found_line and (found_line - 1) or 0
-          end
+          local line = ft.line or find_test_line(target_buf, ft.name) or 1
 
+          -- Sign clássico de erro ✘ na SignColumn (margem lateral esquerda)
+          pcall(vim.fn.sign_place, 0, sign_group, "TestFailedSign", target_buf, {
+            lnum = line,
+            priority = 30,
+          })
+
+          -- Extmark moderno de Neovim com sign_text ✘ + mensagem de erro
+          pcall(vim.api.nvim_buf_set_extmark, target_buf, test_ns, line - 1, 0, {
+            sign_text = "✘",
+            sign_hl_group = "TestFailedSign",
+            virt_text = { { "✘ " .. ft.error, "TestFailedSign" } },
+            virt_text_pos = "eol",
+          })
+
+          -- Diagnóstico para hover e undercurl
           diags_by_buf[target_buf] = diags_by_buf[target_buf] or {}
           table.insert(diags_by_buf[target_buf], {
             bufnr = target_buf,
-            lnum = lnum,
+            lnum = line - 1,
             col = 0,
             severity = vim.diagnostic.severity.ERROR,
             source = "Test Failure",
@@ -329,46 +407,27 @@ function M.run(opts)
         end
       end
 
-      -- Publica os diagnósticos (ativa automaticamente o ✘ na margem, undercurl e virtual text!)
+      -- Publica diagnósticos para hover e undercurl
       for bnr, diags in pairs(diags_by_buf) do
-        vim.diagnostic.set(test_ns, bnr, diags, {
-          virtual_text = {
-            prefix = "●",
-            spacing = 2,
-          },
-          underline = true,
-          signs = true,
-        })
+        pcall(vim.diagnostic.set, test_ns, bnr, diags)
       end
 
-      -- 2. Trata os testes que passaram (Gera o ✔ verde na margem)
-      if current_valid_buf then
-        for _, test_name in ipairs(passed_tests) do
-          local line = find_method_line_in_buf(current_valid_buf, test_name)
-          if line then
-            vim.fn.sign_place(0, sign_group, "TestPassedSign", current_valid_buf, {
-              lnum = line,
-              priority = 8,
-            })
-          end
-        end
-      end
+      -- Força o redesenho visual da SignColumn e da janela
+      vim.cmd("redraw")
 
-      -- Notificação com resumo
+      -- Notificação final
       local total = #passed_tests + #failed_tests
       if #failed_tests > 0 then
         vim.notify(
           string.format("✘ %d teste(s) falharam! (%d passaram)", #failed_tests, #passed_tests),
           vim.log.levels.ERROR
         )
-        -- ABRE AUTOMATICAMENTE O OUTPUT NO FUNDO QUANDO UM TESTE FALHA!
         M.show_output()
       elseif total > 0 then
         vim.notify(
           string.format("✔ Todos os %d teste(s) passaram com sucesso!", total),
           vim.log.levels.INFO
         )
-        -- Se todos passaram e o painel estava aberto, podemos fechá-lo
         if M.output_win and vim.api.nvim_win_is_valid(M.output_win) then
           vim.api.nvim_win_close(M.output_win, true)
           M.output_win = nil
