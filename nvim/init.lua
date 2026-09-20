@@ -65,3 +65,44 @@ require("lazy").setup("plugins", {
     },
   },
 })
+
+-- ============================================================================
+-- 4. Cores Base VS Code Exatas
+-- ============================================================================
+local function apply_vscode_colors()
+  -- Editor base
+  local bg_editor = "#24292e"
+  vim.api.nvim_set_hl(0, "Normal", { fg = "#e1e4e8", bg = bg_editor })
+  vim.api.nvim_set_hl(0, "NormalNC", { bg = bg_editor })
+  vim.api.nvim_set_hl(0, "SignColumn", { bg = bg_editor })
+  vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = bg_editor })
+  vim.api.nvim_set_hl(0, "FoldColumn", { bg = bg_editor })
+  vim.api.nvim_set_hl(0, "CursorLine", { bg = "#2b3036" })
+  vim.api.nvim_set_hl(0, "LineNr", { fg = "#8b949e", bg = bg_editor })
+  vim.api.nvim_set_hl(0, "CursorLineNr", { fg = "#9ece6a", bg = bg_editor })
+  vim.api.nvim_set_hl(0, "Cursor", { bg = "#f78166" })
+  vim.api.nvim_set_hl(0, "Visual", { bg = "#593f3c" })
+  vim.api.nvim_set_hl(0, "NormalFloat", { bg = "#1f2428" })
+  vim.api.nvim_set_hl(0, "FloatBorder", { bg = "#1f2428" })
+
+  -- Sidebar / explorer
+  vim.api.nvim_set_hl(0, "NeoTreeNormal", { bg = "#0d1117" })
+  vim.api.nvim_set_hl(0, "NeoTreeNormalNC", { bg = "#0d1117" })
+  vim.api.nvim_set_hl(0, "NvimTreeNormal", { bg = "#0d1117" })
+  vim.api.nvim_set_hl(0, "NvimTreeNormalNC", { bg = "#0d1117" })
+
+  -- Statusline / Tabline / Winbar
+  vim.api.nvim_set_hl(0, "StatusLine", { bg = "#161b22" })
+  vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "#161b22" })
+  vim.api.nvim_set_hl(0, "TabLine", { bg = "#161b22" })
+  vim.api.nvim_set_hl(0, "TabLineFill", { bg = "#161b22" })
+  vim.api.nvim_set_hl(0, "WindowTabFill", { bg = "#161b22" })
+end
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+  group = vim.api.nvim_create_augroup("VSCodeBaseColors", { clear = true }),
+  callback = apply_vscode_colors,
+})
+
+apply_vscode_colors()
+

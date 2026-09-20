@@ -15,8 +15,12 @@ if vim.g.neovide then
     end,
   })
 
-  -- Fonte profissional: Cascadia Code (a fonte oficial moderna do Visual Studio / VS Code)
-  vim.o.guifont = "Cascadia Code:h12"
+  -- Fonte profissional Nerd Font: FiraCode Nerd Font (alta resolução de ícones e ligaduras limpas)
+  vim.o.guifont = "FiraCode Nerd Font,Cascadia Code:h11.5"
+  vim.g.neovide_opacity = 1.0
+  vim.g.neovide_transparency = 1.0
+  vim.g.neovide_window_blurred = false
+  vim.g.neovide_blur = 0
   vim.g.neovide_cursor_animation_length = 0.05
   vim.g.neovide_cursor_trail_size = 0.3
   vim.g.neovide_scroll_animation_length = 0.2

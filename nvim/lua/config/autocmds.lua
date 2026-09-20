@@ -8,6 +8,17 @@ vim.api.nvim_create_autocmd({ "FocusLost", "BufLeave" }, {
   end,
 })
 
+-- Indentação oficial de 4 espaços para C#, Razor e Python (estilo VS Code / Visual Studio)
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "cs", "razor", "cshtml", "python" },
+  callback = function()
+    vim.bo.tabstop = 4
+    vim.bo.shiftwidth = 4
+    vim.bo.softtabstop = 4
+    vim.bo.expandtab = true
+  end,
+})
+
 -- Restaura sempre a posição anterior do cursor ao abrir/guardar ficheiros
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function(args)

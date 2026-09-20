@@ -113,9 +113,69 @@ return {
     config = function()
       require("neo-tree").setup({
         close_if_last_window = true,
+        popup_border_style = "rounded",
+        enable_git_status = true,
+        enable_diagnostics = true,
+        open_files_do_not_replace_types = { "terminal", "trouble", "qf" },
+        sort_case_insensitive = true,
+        default_component_configs = {
+          container = {
+            enable_character_fade = true,
+          },
+          indent = {
+            indent_size = 2,
+            padding = 1,
+            with_markers = true,
+            indent_marker = "│",
+            last_indent_marker = "└",
+            highlight = "NeoTreeIndentMarker",
+            with_expanders = true,
+            expander_collapsed = "󰅂",
+            expander_expanded = "󰅀",
+            expander_highlight = "NeoTreeExpander",
+          },
+          icon = {
+            folder_closed = "󰉋",
+            folder_open = "󰝰",
+            folder_empty = "󰉍",
+            folder_empty_open = "󰉍",
+            default = "󰈔",
+            highlight = "NeoTreeFileIcon",
+          },
+          modified = {
+            symbol = "●",
+            highlight = "NeoTreeModified",
+          },
+          name = {
+            trailing_slash = false,
+            use_git_status_colors = true,
+            highlight = "NeoTreeFileName",
+          },
+          git_status = {
+            symbols = {
+              added     = "✚",
+              modified  = "",
+              deleted   = "✖",
+              renamed   = "󰁕",
+              untracked = "",
+              ignored   = "",
+              unstaged  = "󰄱",
+              staged    = "",
+              conflict  = "",
+            },
+          },
+        },
         window = {
-          width = 32,
+          position = "left",
+          width = 30,
+          mapping_options = {
+            noremap = true,
+            nowait = true,
+          },
           mappings = {
+            ["<space>"] = "none",
+            ["<2-LeftMouse>"] = "open",
+            ["<cr>"] = "open",
             ["<Del>"] = "delete",
             ["<BS>"] = "navigate_up",
             ["d"] = "delete",
@@ -128,20 +188,33 @@ return {
             leave_dirs_open = false,
           },
           use_libuv_file_watcher = true,
-          filtered_items = { visible = true, hide_dotfiles = false },
+          filtered_items = {
+            visible = true,
+            hide_dotfiles = false,
+            hide_gitignored = false,
+          },
           window = {
             mappings = {
-              ["<C-n>"] = "add", -- Ctrl+n: Criar novo ficheiro (pede título + extensão) no diretório selecionado
+              ["<C-n>"] = "add", -- Ctrl+n: Criar novo ficheiro
               ["a"] = "add",
+              ["A"] = "add_directory",
               ["<Del>"] = "delete",
               ["<BS>"] = "navigate_up",
               ["u"] = "navigate_up",
               ["."] = "set_root",
               ["H"] = "toggle_hidden",
+              ["R"] = "refresh",
             },
           },
         },
       })
+      -- Cores subtis estilo VS Code para os marcadores do Explorer
+      vim.api.nvim_set_hl(0, "NeoTreeIndentMarker", { fg = "#30363d" })
+      vim.api.nvim_set_hl(0, "NeoTreeExpander", { fg = "#7d8590" })
+      vim.api.nvim_set_hl(0, "NeoTreeNormal", { bg = "#0d1117" })
+      vim.api.nvim_set_hl(0, "NeoTreeNormalNC", { bg = "#0d1117" })
+      vim.api.nvim_set_hl(0, "NeoTreeWinSeparator", { fg = "#21262d", bg = "#0d1117" })
+
       -- Atalhos de navegação do FileTree
       -- Ctrl+Shift+E foca o FileTree
       vim.keymap.set({ "n", "i", "v" }, "<C-S-e>", "<Cmd>Neotree focus<CR>", { desc = "Abrir/Focar FileTree (Ctrl+Shift+E)" })
