@@ -23,7 +23,8 @@ o.undofile = true
 o.swapfile = false -- Desativa ficheiros .swp (evita avisos W325; undofile e auto-save tratam da segurança)
 o.cursorline = true
 o.showtabline = 0 -- Desativa a tabline global do topo (cada split tem a sua barra de abas local no topo via winbar)
-o.cmdheight = 0 -- Cola a statusline diretamente ao fundo da janela (estilo VS Code, sem linha vazia em baixo)
+o.laststatus = 3 -- Garante a statusline global colada permanentemente ao fundo de toda a janela
+o.cmdheight = 0 -- Cola a statusline diretamente ao fundo do ecrã (estilo VS Code, sem linha vazia por baixo)
 o.report = 99999 -- Não mostra notificações/mensagens de "1 line less", "1 line deleted", etc.
 o.shortmess:append("sI") -- Silencia mensagens desnecessárias do intro e escrita
 

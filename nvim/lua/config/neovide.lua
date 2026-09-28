@@ -16,9 +16,8 @@ if vim.g.neovide then
   })
 
   -- Fonte profissional Nerd Font: FiraCode Nerd Font (alta resolução de ícones e ligaduras limpas)
-  vim.o.guifont = "FiraCode Nerd Font,Cascadia Code:h11.5"
+  vim.o.guifont = "FiraCode Nerd Font,Cascadia Code:h10.5"
   vim.g.neovide_opacity = 1.0
-  vim.g.neovide_transparency = 1.0
   vim.g.neovide_window_blurred = false
   vim.g.neovide_blur = 0
   vim.g.neovide_cursor_animation_length = 0.05
@@ -49,4 +48,33 @@ if vim.g.neovide then
   vim.keymap.set({ "n", "v" }, "<C-0>", function()
     vim.g.neovide_scale_factor = 1.0
   end, { desc = "Repor zoom da fonte" })
+
+  -- Garante que Ctrl+Espaço no Neovide apenas abre o menu de completamento/hints LSP sem passar de linha
+  local trigger_lsp_hints = function()
+    local mode = vim.fn.mode()
+    local ok, cmp = pcall(require, "cmp")
+
+    if mode:find("n") then
+      vim.cmd("startinsert")
+      vim.schedule(function()
+        local ok_inner, cmp_inner = pcall(require, "cmp")
+        if ok_inner then
+          cmp_inner.complete()
+        else
+          pcall(vim.lsp.buf.completion)
+        end
+      end)
+      return
+    end
+
+    if ok then
+      if not cmp.visible() then
+        cmp.complete()
+      end
+    else
+      vim.lsp.buf.completion()
+    end
+  end
+  vim.keymap.set({ "n", "i", "s" }, "<C-Space>", trigger_lsp_hints, { silent = true, desc = "Mostrar hints/completamento LSP" })
+  vim.keymap.set({ "n", "i", "s" }, "<C-@>", trigger_lsp_hints, { silent = true, desc = "Mostrar hints/completamento LSP" })
 end

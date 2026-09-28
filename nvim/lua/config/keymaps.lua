@@ -5,6 +5,35 @@ vim.keymap.set("n", "<C-s>", ":write<CR>", { desc = "Guardar" })
 vim.keymap.set("i", "jk", "<Esc>", { desc = "Sair do modo insert" })
 vim.keymap.set("i", "<C-BS>", "<C-W>", { desc = "Apagar palavra anterior" })
 vim.keymap.set("i", "<C-H>", "<C-W>", { desc = "Apagar palavra anterior" })
+-- Previne que Ctrl+Espaço ou Ctrl+@ insiram espaços ou quebras de linha e força abrir sugestões/hints do LSP
+local function trigger_lsp_completion()
+  local mode = vim.fn.mode()
+  local ok, cmp = pcall(require, "cmp")
+
+  if mode:find("n") then
+    -- Em modo normal, entra no modo de inserção e abre as sugestões de imediato (estilo VS Code)
+    vim.cmd("startinsert")
+    vim.schedule(function()
+      local ok_inner, cmp_inner = pcall(require, "cmp")
+      if ok_inner then
+        cmp_inner.complete()
+      else
+        pcall(vim.lsp.buf.completion)
+      end
+    end)
+    return
+  end
+
+  if ok then
+    if not cmp.visible() then
+      cmp.complete()
+    end
+  else
+    pcall(vim.lsp.buf.completion)
+  end
+end
+vim.keymap.set({ "n", "i", "s" }, "<C-Space>", trigger_lsp_completion, { silent = true, desc = "Mostrar hints/sugestões LSP" })
+vim.keymap.set({ "n", "i", "s" }, "<C-@>", trigger_lsp_completion, { silent = true, desc = "Mostrar hints/sugestões LSP" })
 
 -- Undo & Redo (Ctrl+Z para desfazer, Ctrl+Shift+Z para refazer estilo VS Code)
 vim.keymap.set({ "n", "i", "v" }, "<C-z>", "<Cmd>undo<CR>", { desc = "Undo" })
@@ -86,15 +115,21 @@ vim.keymap.set({ "n", "v", "i" }, "<A-ScrollWheelDown>", "15<C-e>", { desc = "Sc
 vim.keymap.set({ "n", "v", "i" }, "<M-ScrollWheelUp>", "15<C-y>", { desc = "Scroll rápido para cima" })
 vim.keymap.set({ "n", "v", "i" }, "<M-ScrollWheelDown>", "15<C-e>", { desc = "Scroll rápido para baixo" })
 
--- F3 e Shift+F3: Próxima / Anterior ocorrência de pesquisa (estilo Windows/VS Code)
-vim.keymap.set({ "n", "v", "i" }, "<F3>", "<Cmd>silent! normal! nzv<CR>", { desc = "Próxima ocorrência (F3)" })
-vim.keymap.set({ "n", "v", "i" }, "<S-F3>", "<Cmd>silent! normal! Nzv<CR>", { desc = "Ocorrência anterior (Shift+F3)" })
+-- F3 e Shift+F3: Próxima / Anterior ocorrência da palavra sob o cursor
+vim.keymap.set({ "n", "v", "i" }, "<F3>", "<Cmd>silent! normal! *zv<CR>", { desc = "Próxima ocorrência (F3)" })
+vim.keymap.set({ "n", "v", "i" }, "<S-F3>", "<Cmd>silent! normal! #zv<CR>", { desc = "Ocorrência anterior (Shift+F3)" })
 
 -- Execução e Sinais de Testes .NET (sinal ✘ idêntico ao erro quando falha, ✔ quando passa)
 vim.keymap.set("n", "<leader>tt", "<Cmd>Test<CR>", { desc = "Testes: Executar ficheiro atual" })
 vim.keymap.set("n", "<leader>tr", "<Cmd>TestNearest<CR>", { desc = "Testes: Executar teste sob o cursor" })
-vim.keymap.set("n", "<leader>ta", "<Cmd>TestAll<CR>", { desc = "Testes: Executar todos os testes do projeto" })
-vim.keymap.set("n", "<leader>to", "<Cmd>TestOutput<CR>", { desc = "Testes: Mostrar/Ocultar painel de output" })
-vim.keymap.set("n", "<leader>tp", "<Cmd>TestTerminal<CR>", { desc = "Testes: Executar no terminal PowerShell interativo" })
-vim.keymap.set("n", "<leader>tc", "<Cmd>TestClear<CR>", { desc = "Testes: Limpar sinais e resultados" })
+vim.keymap.set("n", "<leader>ta", "<Cmd>TestAll<CR>", { desc = "Testes: Executar todos os testes da solução" })
+vim.keymap.set("n", "<leader>tP", "<Cmd>TestProject<CR>", { desc = "Testes: Escolher .csproj de testes para carregar/correr" })
+vim.keymap.set("n", "<leader>to", "<Cmd>TestOutput<CR>", { desc = "Testes: Detalhes da falha sob o cursor" })
+vim.keymap.set("n", "<leader>tp", "<Cmd>TestTerminal<CR>", { desc = "Testes: Mostrar/Ocultar output completo" })
+vim.keymap.set("n", "<leader>tc", "<Cmd>TestClear<CR>", { desc = "Testes: Limpar output" })
 vim.keymap.set("n", "<leader>tw", "<Cmd>TestWatch<CR>", { desc = "Testes: Alternar modo Watch ao guardar (:w)" })
+
+-- Explorador de testes e navegação entre falhas (Neotest)
+vim.keymap.set("n", "<leader>ts", "<Cmd>TestSummary<CR>", { desc = "Testes: Explorador de resultados" })
+vim.keymap.set("n", "]t", "<Cmd>TestNextFailed<CR>", { desc = "Testes: Próxima falha no ficheiro" })
+vim.keymap.set("n", "[t", "<Cmd>TestPrevFailed<CR>", { desc = "Testes: Falha anterior no ficheiro" })

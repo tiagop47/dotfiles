@@ -24,9 +24,16 @@ return {
               ["<C-k>"] = a.move_selection_previous,
               ["<C-v>"] = function()
                 local text = vim.fn.getreg("+")
-                if text == "" then text = vim.fn.getreg('"') end
-                text = text:gsub("[\r\n]+", " ")
-                vim.api.nvim_put({ text }, "c", true, true)
+                if not text or text == "" then
+                  text = vim.fn.getreg('"')
+                end
+                if not text or text == "" then
+                  text = vim.fn.getreg("*")
+                end
+                if text and text ~= "" then
+                  text = text:gsub("[\r\n]+", " ")
+                  vim.api.nvim_feedkeys(text, "n", true)
+                end
               end,
             },
           },
@@ -204,6 +211,25 @@ return {
               ["."] = "set_root",
               ["H"] = "toggle_hidden",
               ["R"] = "refresh",
+              ["t"] = function(state)
+                local node = state.tree:get_node()
+                if node and node.path then
+                  require("config.dotnet_test").run({ path = node.path })
+                  vim.notify("Testes a correr para: " .. vim.fs.basename(node.path))
+                end
+              end,
+              ["p"] = function(state)
+                local node = state.tree:get_node()
+                if node then
+                  require("config.inspect_packages").inspect_node(node)
+                end
+              end,
+              ["<RightMouse>"] = function(state)
+                local node = state.tree:get_node()
+                if node then
+                  require("config.inspect_packages").inspect_node(node)
+                end
+              end,
             },
           },
         },
@@ -605,6 +631,11 @@ return {
         ["Select All"] = "<C-S-l>",
         ["Undo"] = "u",
         ["Redo"] = "<C-r>",
+        ["Select Operator"] = "", -- Desativa o operador interno antigo
+      }
+      -- Faz com que 's' em multi-cursor funcione como substituição: apaga o texto selecionado (ou caractere) e entra em insert mode em todos os cursores
+      vim.g.VM_custom_noremaps = {
+        ["s"] = "c",
       }
     end,
   },

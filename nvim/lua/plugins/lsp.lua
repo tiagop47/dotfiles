@@ -530,7 +530,16 @@ return {
             end
           end, { "i", "s" }),
           ["<CR>"] = cmp.mapping.confirm({ select = false }),
-          ["<C-Space>"] = cmp.mapping.complete(),
+          ["<C-Space>"] = cmp.mapping(function()
+            if not cmp.visible() then
+              cmp.complete()
+            end
+          end, { "i", "s", "c" }),
+          ["<C-@>"] = cmp.mapping(function()
+            if not cmp.visible() then
+              cmp.complete()
+            end
+          end, { "i", "s", "c" }),
         }),
         window = {
           completion = cmp.config.window.bordered({

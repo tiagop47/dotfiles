@@ -23,6 +23,16 @@ return {
       })
       vim.cmd("colorscheme github_dark_default")
 
+      -- Argumento ativo na assinatura: amarelo claro com bom contraste.
+      local function signature_highlight()
+        vim.api.nvim_set_hl(0, "LspSignatureActiveParameter", { fg = "#FFD866", bold = true })
+      end
+      vim.api.nvim_create_autocmd("ColorScheme", {
+        group = vim.api.nvim_create_augroup("SignatureParameterContrast", { clear = true }),
+        callback = signature_highlight,
+      })
+      signature_highlight()
+
       -- Sublinhados ondulados estilo VS Code para erros
       vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "#f85149" })
       vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn", { undercurl = true, sp = "#d29922" })
